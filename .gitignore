@@ -1,0 +1,65 @@
+# Rails backend (.gitignore for /backend)
+# See https://github.com/github/gitignore/blob/main/Rails.gitignore
+
+/backend/.bundle
+/backend/log/*
+!/backend/log/.keep
+/backend/tmp
+/backend/tmp/*
+!/backend/tmp/.keep
+/backend/vendor/bundle
+/backend/node_modules
+/backend/public/system
+/backend/public/packs
+/backend/public/packs-test
+
+# SQLite, local DBs
+/backend/db/*.sqlite3
+/backend/db/*.sqlite3-journal
+
+# Master key, env
+/backend/config/master.key
+/backend/.env
+
+# Active Storage
+/backend/storage/*
+!/backend/storage/.keep
+
+# Other
+/backend/coverage/
+/backend/.byebug_history
+/backend/npm-debug.log*
+/backend/yarn-debug.log*
+/backend/yarn-error.log*
+
+# -------------------------
+# React frontend (.gitignore for /frontend)
+# See https://github.com/github/gitignore/blob/main/Node.gitignore
+
+/frontend/node_modules/
+/frontend/build/
+/frontend/dist/
+/frontend/.cache/
+/frontend/.parcel-cache
+
+# Environment files
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# Logs
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+
+# Coverage
+/frontend/coverage/
+
+# OS / Editor
+/.DS_Store
+*.swp
+/.idea/
+/.vscode/
+node_modules

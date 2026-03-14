@@ -1,0 +1,19 @@
+<% content_for(:page_title) {
+  t("administrate.actions.edit_resource", name: page.page_title)
+} %>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="ti ti-edit me-1"></i> Edit <%= display_resource_name(page.resource_name, singular: true) %>
+    </h3>
+    <div class="card-actions">
+      <%= link_to [namespace, page.resource], class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="ti ti-arrow-left me-1"></i> Back
+      <% end %>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= render "form", page: page %>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -u \"admin@intent.app:Admin123!\" http://localhost:3000/admin/users)",
+      "Bash(bundle exec:*)",
+      "Bash(lsof -ti:3000,5173)",
+      "Bash(npm run:*)",
+      "Bash(lsof -ti:5173)",
+      "Bash(find /Users/virendrashakya/Development/intent-dating-mvp -type f -name *.log)",
+      "Bash(find /Users/virendrashakya/Development/intent-dating-mvp/frontend/src -type f -name *router* -o -name *App.tsx -o -name *App.ts)"
+    ]
+  }
+}

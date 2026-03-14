@@ -1,0 +1,26 @@
+<% if resources.respond_to?(:total_pages) && resources.total_pages > 1 %>
+  <div class="card-footer d-flex align-items-center">
+    <p class="m-0 text-secondary">
+      Showing <strong><%= resources.offset_value + 1 %></strong> to
+      <strong><%= [resources.offset_value + resources.limit_value, resources.total_count].min %></strong>
+      of <strong><%= resources.total_count %></strong> entries
+    </p>
+    <ul class="pagination m-0 ms-auto">
+      <li class="page-item <%= 'disabled' if resources.first_page? %>">
+        <%= link_to sanitized_order_params.merge(page: resources.prev_page || 1), class: "page-link" do %>
+          <i class="ti ti-chevron-left"></i>
+        <% end %>
+      </li>
+      <% (1..resources.total_pages).each do |page_num| %>
+        <li class="page-item <%= 'active' if page_num == resources.current_page %>">
+          <%= link_to page_num, sanitized_order_params.merge(page: page_num), class: "page-link" %>
+        </li>
+      <% end %>
+      <li class="page-item <%= 'disabled' if resources.last_page? %>">
+        <%= link_to sanitized_order_params.merge(page: resources.next_page || resources.total_pages), class: "page-link" do %>
+          <i class="ti ti-chevron-right"></i>
+        <% end %>
+      </li>
+    </ul>
+  </div>
+<% end %>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IntentConnect Admin</title>
+  <!-- Tabler Core CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --tblr-primary: #6c5ce7;
+      --tblr-primary-rgb: 108, 92, 231;
+    }
+    .navbar-brand-image { height: 28px; }
+    /* Sidebar dark theme */
+    .navbar-vertical.navbar-dark {
+      background: #1a1d23;
+    }
+    .navbar-vertical.navbar-dark .navbar-nav .nav-link {
+      color: rgba(255,255,255,.65);
+      border-radius: 6px;
+      margin: 1px 8px;
+      padding: 8px 12px;
+    }
+    .navbar-vertical.navbar-dark .navbar-nav .nav-link:hover {
+      color: #fff;
+      background: rgba(255,255,255,.06);
+    }
+    .navbar-vertical.navbar-dark .navbar-nav .nav-link.active {
+      color: #fff;
+      background: var(--tblr-primary);
+    }
+    .navbar-vertical.navbar-dark .nav-link-title { font-size: 13px; }
+    .navbar-vertical.navbar-dark .nav-link .nav-link-icon {
+      color: rgba(255,255,255,.4);
+      width: 24px;
+    }
+    .navbar-vertical.navbar-dark .nav-link.active .nav-link-icon { color: #fff; }
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,.25);
+      padding: 16px 20px 4px;
+    }
+    /* Override Administrate tables */
+    .page-body table {
+      margin-bottom: 0;
+    }
+    .page-body table th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #626976;
+      white-space: nowrap;
+    }
+    .page-body table td { vertical-align: middle; }
+    .page-body table a { color: var(--tblr-primary); font-weight: 500; }
+    /* Administrate search */
+    .page-body form.search { margin-bottom: 1rem; }
+    .page-body form.search input[type="search"] {
+      max-width: 360px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #dadfe5;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .page-body form.search input[type="search"]:focus {
+      border-color: var(--tblr-primary);
+      box-shadow: 0 0 0 3px rgba(108,92,231,.1);
+      outline: none;
+    }
+    /* Administrate forms */
+    .page-body .field-unit { margin-bottom: 1.25rem; }
+    .page-body .field-unit label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #626976;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .page-body .field-unit input[type="text"],
+    .page-body .field-unit input[type="email"],
+    .page-body .field-unit input[type="number"],
+    .page-body .field-unit input[type="password"],
+    .page-body .field-unit textarea,
+    .page-body .field-unit select {
+      display: block;
+      width: 100%;
+      max-width: 520px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #dadfe5;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .page-body .field-unit input:focus,
+    .page-body .field-unit textarea:focus,
+    .page-body .field-unit select:focus {
+      border-color: var(--tblr-primary);
+      box-shadow: 0 0 0 3px rgba(108,92,231,.1);
+      outline: none;
+    }
+    /* Buttons */
+    .page-body a.button,
+    .page-body input[type="submit"] {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--tblr-primary);
+      color: #fff;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .page-body a.button:hover,
+    .page-body input[type="submit"]:hover { background: #5b4bd5; }
+    .page-body a.button--danger { background: #d63939; }
+    .page-body a.button--danger:hover { background: #b62d2d; }
+    /* Administrate show page dl */
+    .page-body dl { margin: 0; }
+    .page-body dt {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #626976;
+      padding: 12px 16px 4px;
+    }
+    .page-body dd {
+      padding: 4px 16px 12px;
+      font-size: 14px;
+      border-bottom: 1px solid #e6e7e9;
+    }
+    .page-body dd:last-child { border-bottom: none; }
+    /* Pagination */
+    .page-body .pagination {
+      list-style: none;
+      display: flex;
+      gap: 2px;
+      padding: 0;
+      margin-top: 1rem;
+    }
+    .page-body .pagination a,
+    .page-body .pagination span {
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      text-decoration: none;
+      color: #626976;
+    }
+    .page-body .pagination .current {
+      background: var(--tblr-primary);
+      color: #fff;
+    }
+    .page-body .pagination a:hover { background: #e6e7e9; }
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-badge.active, .status-badge.accepted   { background: #d2f4ea; color: #0b7a52; }
+    .status-badge.pending   { background: #fff3cd; color: #925b08; }
+    .status-badge.suspended, .status-badge.rejected { background: #fcd9d9; color: #a12222; }
+    .status-badge.reviewed  { background: #d9e8fc; color: #224da1; }
+    /* Auto-style Administrate form fields with Tabler classes */
+    .page-body .form input[type="text"],
+    .page-body .form input[type="email"],
+    .page-body .form input[type="number"],
+    .page-body .form input[type="password"],
+    .page-body .form input[type="url"],
+    .page-body .form input[type="tel"],
+    .page-body .form input[type="date"],
+    .page-body .form input[type="datetime-local"],
+    .page-body .form textarea,
+    .page-body .form select {
+      display: block;
+      width: 100%;
+      max-width: 520px;
+      padding: 0.4375rem 0.75rem;
+      font-size: .875rem;
+      font-weight: 400;
+      line-height: 1.4285714286;
+      color: #1d273b;
+      background-color: #fff;
+      border: 1px solid #dadfe5;
+      border-radius: 4px;
+      transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .page-body .form input:focus,
+    .page-body .form textarea:focus,
+    .page-body .form select:focus {
+      border-color: var(--tblr-primary);
+      box-shadow: 0 0 0 .25rem rgba(var(--tblr-primary-rgb),.25);
+      outline: 0;
+    }
+    .page-body .form textarea { min-height: 100px; resize: vertical; }
+    /* Administrate belongs_to selects */
+    .page-body .form .field-unit--belongs_to select { max-width: 520px; }
+    /* Administrate boolean checkboxes */
+    .page-body .form input[type="checkbox"] { width: auto; }
+  </style>
+</head>
+<body class="layout-fluid">
+  <div class="page">
+    <!-- Sidebar -->
+    <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 class="navbar-brand navbar-brand-autodark">
+          <a href="<%= admin_root_path %>" style="text-decoration:none; display:flex; align-items:center; gap:10px;">
+            <span style="background:var(--tblr-primary); width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+              <i class="fa-solid fa-heart-pulse" style="color:#fff; font-size:15px;"></i>
+            </span>
+            <span style="color:#fff; font-weight:700; font-size:15px;">IntentConnect</span>
+          </a>
+        </h1>
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+          <ul class="navbar-nav pt-lg-3">
+
+            <li class="nav-section-label">Main</li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path == admin_root_path || request.path == admin_dashboard_path %>" href="<%= admin_root_path %>">
+                <span class="nav-link-icon"><i class="ti ti-dashboard"></i></span>
+                <span class="nav-link-title">Dashboard</span>
+              </a>
+            </li>
+
+            <li class="nav-section-label">Management</li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/users') %>" href="<%= admin_users_path %>">
+                <span class="nav-link-icon"><i class="ti ti-users"></i></span>
+                <span class="nav-link-title">Users</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/profiles') %>" href="<%= admin_profiles_path %>">
+                <span class="nav-link-icon"><i class="ti ti-id-badge-2"></i></span>
+                <span class="nav-link-title">Profiles</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/connections') %>" href="<%= admin_connections_path %>">
+                <span class="nav-link-icon"><i class="ti ti-link"></i></span>
+                <span class="nav-link-title">Connections</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/messages') %>" href="<%= admin_messages_path %>">
+                <span class="nav-link-icon"><i class="ti ti-message-circle"></i></span>
+                <span class="nav-link-title">Messages</span>
+              </a>
+            </li>
+
+            <li class="nav-section-label">Community</li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/groups') %>" href="<%= admin_groups_path %>">
+                <span class="nav-link-icon"><i class="ti ti-users-group"></i></span>
+                <span class="nav-link-title">Groups</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/posts') %>" href="<%= admin_posts_path %>">
+                <span class="nav-link-icon"><i class="ti ti-flame"></i></span>
+                <span class="nav-link-title">Posts</span>
+              </a>
+            </li>
+
+            <li class="nav-section-label">Moderation</li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/reports') %>" href="<%= admin_reports_path %>">
+                <span class="nav-link-icon"><i class="ti ti-flag"></i></span>
+                <span class="nav-link-title">Reports</span>
+                <% pending_reports = Report.where(status: "pending").count rescue 0 %>
+                <% if pending_reports > 0 %>
+                  <span class="badge bg-danger ms-auto"><%= pending_reports %></span>
+                <% end %>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/blocks') %>" href="<%= admin_blocks_path %>">
+                <span class="nav-link-icon"><i class="ti ti-ban"></i></span>
+                <span class="nav-link-title">Blocks</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/notifications') %>" href="<%= admin_notifications_path %>">
+                <span class="nav-link-icon"><i class="ti ti-bell"></i></span>
+                <span class="nav-link-title">Notifications</span>
+              </a>
+            </li>
+
+            <li class="nav-section-label">Settings</li>
+            <li class="nav-item">
+              <a class="nav-link <%= 'active' if request.path.start_with?('/admin/app_configs') %>" href="<%= admin_app_configs_path %>">
+                <span class="nav-link-icon"><i class="ti ti-settings"></i></span>
+                <span class="nav-link-title">App Config</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="page-wrapper">
+      <!-- Header -->
+      <div class="page-header d-print-none">
+        <div class="container-xl">
+          <div class="page-header-left">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <% page_title = if content_for?(:page_title)
+                                   yield(:page_title)
+                                 elsif defined?(resource_name)
+                                   resource_name.to_s.pluralize.titleize
+                                 else
+                                   controller_name.titleize
+                                 end %>
+                <h2 class="page-title"><%= page_title %></h2>
+              </div>
+            </div>
+          </div>
+          <div class="page-header-right">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <span class="badge bg-purple-lt">
+                  <i class="ti ti-shield-check me-1"></i> Super Admin
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page body -->
+      <div class="page-body">
+        <div class="container-xl">
+          <% if flash[:notice] %>
+            <div class="alert alert-success alert-dismissible mb-3" role="alert">
+              <div class="d-flex"><div><i class="ti ti-check me-2"></i></div><div><%= flash[:notice] %></div></div>
+              <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+            </div>
+          <% end %>
+          <% if flash[:alert] || flash[:error] %>
+            <div class="alert alert-danger alert-dismissible mb-3" role="alert">
+              <div class="d-flex"><div><i class="ti ti-alert-circle me-2"></i></div><div><%= flash[:alert] || flash[:error] %></div></div>
+              <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+            </div>
+          <% end %>
+
+          <%= yield %>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+          <div class="row text-center align-items-center">
+            <div class="col-12">
+              <span class="text-secondary">IntentConnect Admin &copy; <%= Date.today.year %></span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Tabler Core JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+</body>
+</html>

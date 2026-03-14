@@ -1,0 +1,15 @@
+<%= render "index_header",
+  page: page,
+  resources: resources,
+  search_term: search_term,
+  show_search_bar: show_search_bar %>
+
+<div class="card">
+  <%= render "collection",
+    collection_presenter: page,
+    collection_field_name: resource_name,
+    page: page,
+    resources: resources %>
+
+  <%= render "pagination", resources: resources %>
+</div>

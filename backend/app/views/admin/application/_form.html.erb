@@ -1,0 +1,53 @@
+<%= form_for([namespace, page.resource], html: { class: "form" }) do |f| %>
+  <% if page.resource.errors.any? %>
+    <div class="alert alert-danger mb-3">
+      <div class="d-flex">
+        <div><i class="ti ti-alert-circle me-2"></i></div>
+        <div>
+          <h4 class="alert-title">
+            <%= t(
+              "administrate.form.errors",
+              pluralized_errors: pluralize(page.resource.errors.count, t("administrate.form.error")),
+              resource_name: display_resource_name(page.resource_name, singular: true)
+            ) %>
+          </h4>
+          <ul class="mb-0 mt-1">
+            <% page.resource.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% page.attributes(controller.action_name).each do |title, attributes| %>
+    <% if title.present? %>
+      <h3 class="mb-3 mt-4"><%= t "helpers.label.#{f.object_name}.#{title}", default: title %></h3>
+    <% end %>
+
+    <% attributes.each do |attribute| %>
+      <div class="mb-3">
+        <label class="form-label">
+          <%= t(
+            "helpers.label.#{page.resource_name}.#{attribute.name}",
+            default: attribute.name.to_s.titleize,
+          ) %>
+          <% if attribute.required? %>
+            <span class="text-danger">*</span>
+          <% end %>
+        </label>
+        <%= render_field attribute, f: f %>
+
+        <% hint_key = "administrate.field_hints.#{page.resource_name}.#{attribute.name}" %>
+        <% if I18n.exists?(hint_key) %>
+          <small class="form-hint"><%= I18n.t(hint_key) %></small>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="mt-4">
+    <%= f.submit class: "btn btn-primary" %>
+  </div>
+<% end %>

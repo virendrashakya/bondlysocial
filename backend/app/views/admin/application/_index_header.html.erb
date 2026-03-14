@@ -1,0 +1,21 @@
+<% content_for(:page_title) { display_resource_name(page.resource_name) } %>
+
+<div class="d-flex align-items-center mb-3">
+  <div class="flex-grow-1">
+    <% if show_search_bar %>
+      <%= render "search",
+        search_term: search_term,
+        resource_name: display_resource_name(page.resource_name) %>
+    <% end %>
+  </div>
+  <div class="ms-auto">
+    <% if accessible_action?(new_resource, :new) %>
+      <%= link_to(
+        [:new, namespace, page.resource_path.to_sym],
+        class: "btn btn-primary"
+      ) do %>
+        <i class="ti ti-plus me-1"></i> New <%= display_resource_name(page.resource_name, singular: true) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

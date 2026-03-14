@@ -1,0 +1,10 @@
+.env
+*.log
+tmp/
+storage/
+.bundle/
+vendor/bundle/
+node_modules/
+public/assets/
+config/credentials/*.key
+config/master.key

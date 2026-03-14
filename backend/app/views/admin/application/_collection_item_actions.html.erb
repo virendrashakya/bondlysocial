@@ -1,0 +1,27 @@
+<% if existing_action?(collection_presenter.resource_name, :edit) %>
+  <td class="w-1">
+    <% if accessible_action?(resource, :edit) %>
+      <%= link_to(
+        [:edit, namespace, resource],
+        class: "btn btn-sm btn-ghost-primary"
+      ) do %>
+        <i class="ti ti-edit"></i>
+      <% end %>
+    <% end %>
+  </td>
+<% end %>
+
+<% if existing_action?(collection_presenter.resource_name, :destroy) %>
+  <td class="w-1">
+    <% if accessible_action?(resource, :destroy) %>
+      <%= link_to(
+        [namespace, resource],
+        method: :delete,
+        data: { confirm: t("administrate.actions.confirm") },
+        class: "btn btn-sm btn-ghost-danger"
+      ) do %>
+        <i class="ti ti-trash"></i>
+      <% end %>
+    <% end %>
+  </td>
+<% end %>

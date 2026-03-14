@@ -1,0 +1,20 @@
+<% content_for(:page_title) {
+  t("administrate.actions.new_resource",
+    name: display_resource_name(page.resource_name, singular: true))
+} %>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="ti ti-plus me-1"></i> New <%= display_resource_name(page.resource_name, singular: true) %>
+    </h3>
+    <div class="card-actions">
+      <%= link_to url_for(action: :index), class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="ti ti-arrow-left me-1"></i> Back
+      <% end %>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= render "form", page: page %>
+  </div>
+</div>

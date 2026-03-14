@@ -1,0 +1,9 @@
+<%= form_tag request.path, method: :get, class: "d-inline-block" do %>
+  <div class="input-icon" style="width: 320px;">
+    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+    <%= search_field_tag :search, search_term,
+        class: "form-control",
+        placeholder: "Search #{resource_name.to_s.downcase}...",
+        "aria-label": "search" %>
+  </div>
+<% end %>

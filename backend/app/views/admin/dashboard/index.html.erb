@@ -1,0 +1,359 @@
+<% content_for(:page_title) { "Dashboard" } %>
+
+<!-- Stat Cards Row 1 -->
+<div class="row row-deck row-cards mb-3">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Total Users</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-purple-lt text-purple avatar avatar-sm"><i class="ti ti-users fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-1"><%= @total_users %></div>
+        <div class="d-flex mb-0">
+          <span class="text-green d-inline-flex align-items-center lh-1 me-2">
+            <i class="ti ti-trending-up me-1"></i> <%= @active_users %> active
+          </span>
+          <% if @suspended_users > 0 %>
+            <span class="text-red d-inline-flex align-items-center lh-1">
+              <i class="ti ti-alert-circle me-1"></i> <%= @suspended_users %> suspended
+            </span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Connections</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-green-lt text-green avatar avatar-sm"><i class="ti ti-link fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-1"><%= @total_connections %></div>
+        <div class="d-flex mb-0">
+          <span class="text-green d-inline-flex align-items-center lh-1 me-2">
+            <i class="ti ti-check me-1"></i> <%= @accepted_connections %> accepted
+          </span>
+          <span class="text-yellow d-inline-flex align-items-center lh-1">
+            <i class="ti ti-clock me-1"></i> <%= @pending_connections %> pending
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Messages</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-azure-lt text-azure avatar avatar-sm"><i class="ti ti-message-circle fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-0"><%= @total_messages %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Posts</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-orange-lt text-orange avatar avatar-sm"><i class="ti ti-flame fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-0"><%= @total_posts %></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stat Cards Row 2 -->
+<div class="row row-deck row-cards mb-3">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Groups</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-purple-lt text-purple avatar avatar-sm"><i class="ti ti-users-group fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-0"><%= @total_groups %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Reports</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-red-lt text-red avatar avatar-sm"><i class="ti ti-flag fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-1"><%= @total_reports %></div>
+        <% if @pending_reports > 0 %>
+          <div class="text-red d-inline-flex align-items-center lh-1">
+            <i class="ti ti-alert-triangle me-1"></i> <%= @pending_reports %> pending review
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Verified Users</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-green-lt text-green avatar avatar-sm"><i class="ti ti-user-check fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-0"><%= @verified_users %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Blocks</div>
+          <div class="ms-auto lh-1">
+            <span class="bg-red-lt text-red avatar avatar-sm"><i class="ti ti-ban fs-3"></i></span>
+          </div>
+        </div>
+        <div class="h1 mb-0"><%= @total_blocks %></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="row row-deck row-cards mb-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="ti ti-chart-line me-1 text-purple"></i> User Registrations
+        </h3>
+        <div class="card-actions">
+          <span class="text-secondary">Last 30 days</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="height:280px"><canvas id="usersChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="ti ti-chart-bar me-1 text-orange"></i> Connections
+        </h3>
+        <div class="card-actions">
+          <span class="text-secondary">By status</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="height:280px"><canvas id="connectionsChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Users -->
+<div class="row row-deck row-cards mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-clock me-1"></i> Recent Users</h3>
+        <div class="card-actions">
+          <a href="<%= admin_users_path %>" class="btn btn-sm btn-outline-primary">View all</a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Verified</th>
+              <th>Joined</th>
+              <th class="w-1"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_users.each do |user| %>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span class="avatar avatar-sm bg-purple-lt me-2"><%= user.email[0].upcase %></span>
+                    <div>
+                      <div class="font-weight-medium"><%= user.email %></div>
+                      <div class="text-secondary small">#<%= user.id %></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-secondary"><%= user.phone %></td>
+                <td>
+                  <% if user.admin? %>
+                    <span class="badge bg-purple-lt">Admin</span>
+                  <% else %>
+                    <span class="badge bg-secondary-lt">Member</span>
+                  <% end %>
+                </td>
+                <td><span class="status-badge <%= user.status %>"><%= user.status %></span></td>
+                <td>
+                  <% if user.phone_verified? && user.selfie_verified? %>
+                    <span class="badge bg-green-lt"><i class="ti ti-check"></i> Verified</span>
+                  <% else %>
+                    <span class="badge bg-yellow-lt"><i class="ti ti-clock"></i> Pending</span>
+                  <% end %>
+                </td>
+                <td class="text-secondary"><%= user.created_at.strftime("%b %d, %Y") %></td>
+                <td>
+                  <a href="<%= admin_user_path(user) %>" class="btn btn-sm btn-ghost-primary">View</a>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Reports -->
+<% if @recent_reports.any? %>
+<div class="row row-deck row-cards">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-flag me-1 text-red"></i> Recent Reports</h3>
+        <div class="card-actions">
+          <a href="<%= admin_reports_path %>" class="btn btn-sm btn-outline-danger">View all</a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th class="w-1"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_reports.each do |report| %>
+              <tr>
+                <td class="text-secondary">#<%= report.id %></td>
+                <td><%= report.reason %></td>
+                <td><span class="status-badge <%= report.status %>"><%= report.status %></span></td>
+                <td class="text-secondary"><%= report.created_at.strftime("%b %d, %Y") %></td>
+                <td>
+                  <a href="<%= admin_report_path(report) %>" class="btn btn-sm btn-ghost-danger">Review</a>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const chartFont = { family: "'Inter', sans-serif" };
+
+  // Users registration chart
+  const userLabels = <%= raw @users_by_day.keys.map { |d| d.strftime("%b %d") }.to_json %>;
+  const userData   = <%= raw @users_by_day.values.to_json %>;
+
+  new Chart(document.getElementById("usersChart"), {
+    type: "line",
+    data: {
+      labels: userLabels.length > 0 ? userLabels : ["No data"],
+      datasets: [{
+        label: "New Users",
+        data: userData.length > 0 ? userData : [0],
+        borderColor: "#6c5ce7",
+        backgroundColor: "rgba(108, 92, 231, 0.08)",
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#6c5ce7",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: "#1a1d23", titleFont: chartFont, bodyFont: chartFont, padding: 12, cornerRadius: 8 }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11, ...chartFont } }, grid: { color: "#f0f0f3" }, border: { display: false } },
+        x: { ticks: { font: { size: 11, ...chartFont } }, grid: { display: false }, border: { display: false } }
+      }
+    }
+  });
+
+  // Connections by status chart
+  const connData = <%= raw @connections_by_status.to_json %>;
+  const connLabels = Object.keys(connData).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+  const connValues = Object.values(connData);
+  const connColors = connLabels.map(l => {
+    if (l === "Accepted") return "#2fb344";
+    if (l === "Pending")  return "#f59f00";
+    if (l === "Rejected") return "#d63939";
+    return "#6c5ce7";
+  });
+
+  new Chart(document.getElementById("connectionsChart"), {
+    type: "doughnut",
+    data: {
+      labels: connLabels.length > 0 ? connLabels : ["No data"],
+      datasets: [{
+        data: connValues.length > 0 ? connValues : [1],
+        backgroundColor: connColors.length > 0 ? connColors : ["#e6e7e9"],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "70%",
+      plugins: {
+        legend: { position: "bottom", labels: { padding: 16, usePointStyle: true, font: { size: 12, ...chartFont } } },
+        tooltip: { backgroundColor: "#1a1d23", titleFont: chartFont, bodyFont: chartFont, padding: 12, cornerRadius: 8 }
+      }
+    }
+  });
+});
+</script>
