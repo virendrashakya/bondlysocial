@@ -1,3 +1,6 @@
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+
 interface StoryProfile {
   id: number;
   name: string;
@@ -24,21 +27,19 @@ export function StoryStrip({ profiles, onSelect }: Props) {
         >
           <div className="relative">
             <div
-              className={`w-[60px] h-[60px] rounded-full p-[2.5px] transition-transform group-hover:scale-105 ${
+              className={cn(
+                "w-[60px] h-[60px] rounded-full p-[2.5px] transition-transform group-hover:scale-105",
                 p.online
                   ? "bg-gradient-to-br from-brand via-pink-400 to-orange-300"
                   : "bg-dark-border"
-              }`}
+              )}
             >
-              <div className="w-full h-full rounded-full bg-dark-bg overflow-hidden">
-                {p.avatar_url ? (
-                  <img src={p.avatar_url} alt={p.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-base font-bold text-brand bg-brand-muted">
-                    {p.name[0]}
-                  </div>
-                )}
-              </div>
+              <Avatar className="w-full h-full">
+                {p.avatar_url && <AvatarImage src={p.avatar_url} alt={p.name} />}
+                <AvatarFallback className="text-base font-bold">
+                  {p.name[0]}
+                </AvatarFallback>
+              </Avatar>
             </div>
             {p.online && (
               <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-dark-bg" />

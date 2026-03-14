@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Users, Flag, UserCheck, Layers } from "lucide-react";
 import { adminService } from "../../services/admin.service";
 import { api } from "../../lib/api";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Badge } from "@/components/ui/badge";
 
 function StatCard({ icon: Icon, label, value, color }: {
   icon: React.ElementType; label: string; value: number | string; color: string;
 }) {
   return (
-    <div className="card p-5 flex items-center gap-4">
+    <GlassCard className="flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
         <Icon size={20} />
       </div>
@@ -15,7 +17,7 @@ function StatCard({ icon: Icon, label, value, color }: {
         <p className="text-2xl font-bold text-white">{value}</p>
         <p className="text-sm text-zinc-500">{label}</p>
       </div>
-    </div>
+    </GlassCard>
   );
 }
 
@@ -45,19 +47,19 @@ export function AdminOverviewPage() {
       </div>
 
       {/* Recent open reports preview */}
-      <div className="card overflow-hidden">
-        <div className="px-5 py-4 border-b border-dark-border flex items-center justify-between">
+      <GlassCard padding="none" className="overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/[0.08] flex items-center justify-between">
           <h2 className="font-semibold text-white">Recent open reports</h2>
           <a href="/admin/reports" className="text-sm text-brand hover:text-brand-light transition-colors">View all</a>
         </div>
-        <div className="divide-y divide-dark-border">
+        <div className="divide-y divide-white/[0.06]">
           {(!reports || reports.length === 0) && (
             <div className="px-5 py-8 text-center text-sm text-zinc-500">
               No open reports. Platform is clean.
             </div>
           )}
           {(reports ?? []).slice(0, 5).map((r: any) => (
-            <div key={r.id} className="px-5 py-3 flex items-center justify-between hover:bg-dark-hover transition-colors">
+            <div key={r.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
               <div>
                 <span className="text-sm font-medium text-white">
                   {r.attributes.reporter_name ?? `User #${r.attributes.reporter_id}`}
@@ -66,14 +68,14 @@ export function AdminOverviewPage() {
                 <span className="text-sm font-medium text-white">
                   {r.attributes.reported_name ?? `User #${r.attributes.reported_id}`}
                 </span>
-                <span className="ml-2 text-xs text-rose-400 bg-rose-900/30 border border-rose-800/30 px-2 py-0.5 rounded-full">
+                <Badge variant="danger" size="sm" className="ml-2">
                   {r.attributes.reason}
-                </span>
+                </Badge>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }

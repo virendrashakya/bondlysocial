@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import { connectionsService } from "../services/connections.service";
-import { messagesService } from "../services/messages.service";
-import { AuroraBg } from "../components/ui/AuroraBg";
-import { IntentBadge } from "../components/shared/IntentBadge";
+import { connectionsService } from "@/services/connections.service";
+import { messagesService } from "@/services/messages.service";
+import { AuroraBg } from "@/components/ui/AuroraBg";
+import { IntentBadge } from "@/components/shared/IntentBadge";
 import { formatDistanceToNow } from "date-fns";
+
+import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 function ConversationItem({ connection, onClick }: { connection: any; onClick: () => void }) {
   const other = connection.attributes.other_user;
@@ -25,19 +29,21 @@ function ConversationItem({ connection, onClick }: { connection: any; onClick: (
   if (!other) return null;
 
   return (
-    <button
+    <GlassCard
+      variant="interactive"
+      padding="sm"
+      className="flex items-center gap-4 text-left active:scale-[0.99]"
       onClick={onClick}
-      className="card w-full p-4 flex items-center gap-4 hover:border-brand-border/60 transition-all text-left active:scale-[0.99]"
+      role="button"
       aria-label={`Open chat with ${other.name}`}
     >
       {/* Avatar */}
-      <div className="relative w-12 h-12 rounded-full bg-brand-muted border border-brand-border overflow-hidden flex-shrink-0 flex items-center justify-center text-brand font-semibold">
-        {other.avatar_url ? (
-          <img src={other.avatar_url} alt={other.name} className="w-full h-full object-cover" />
-        ) : (
-          <span>{other.name?.[0]}</span>
-        )}
-        {/* Online dot — cosmetic */}
+      <div className="relative flex-shrink-0">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={other.avatar_url} alt={other.name} />
+          <AvatarFallback>{other.name?.[0]}</AvatarFallback>
+        </Avatar>
+        {/* Online dot */}
         <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-dark-surface" />
       </div>
 
@@ -62,9 +68,8 @@ function ConversationItem({ connection, onClick }: { connection: any; onClick: (
         <span className="text-[10px] text-zinc-600">
           {formatDistanceToNow(new Date(ts), { addSuffix: false })}
         </span>
-        {/* Unread badge placeholder */}
       </div>
-    </button>
+    </GlassCard>
   );
 }
 
@@ -99,13 +104,13 @@ export function MessagesPage() {
       {isLoading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="card p-4 flex items-center gap-4 animate-pulse">
+            <GlassCard key={i} padding="sm" className="flex items-center gap-4 animate-pulse">
               <div className="w-12 h-12 rounded-full bg-dark-hover flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="h-3.5 bg-dark-hover rounded w-28" />
                 <div className="h-2.5 bg-dark-hover rounded w-40" />
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       )}
@@ -120,12 +125,13 @@ export function MessagesPage() {
           <p className="text-xs text-zinc-600 max-w-xs">
             Connect with people on Discover to start chatting.
           </p>
-          <button
+          <Button
+            variant="pink"
             onClick={() => navigate("/discover")}
-            className="btn-primary mt-2"
+            className="mt-2"
           >
             Discover people
-          </button>
+          </Button>
         </div>
       )}
 

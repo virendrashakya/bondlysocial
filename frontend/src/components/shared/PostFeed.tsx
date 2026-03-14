@@ -1,10 +1,15 @@
 import { useState, useRef, useCallback, DragEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, MessageCircle, Send, MoreHorizontal, ImageIcon, Video, X, ChevronLeft, ChevronRight, Lock, Globe, MapPin, Plus, ArrowLeft, Upload, Camera } from "lucide-react";
-import { api } from "../../lib/api";
-import { useAuthStore } from "../../store/authStore";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 
 interface MediaItem {
   url: string;
@@ -39,7 +44,7 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
   if (media.length === 1) {
     const item = media[0];
     return (
-      <div className="border-t border-dark-border">
+      <div className="border-t border-white/[0.06]">
         {item.type === "video" ? (
           <video src={item.url} controls className="w-full max-h-[28rem] object-cover" aria-label="Post video" />
         ) : (
@@ -52,7 +57,7 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
   const item = media[current];
 
   return (
-    <div className="border-t border-dark-border relative group">
+    <div className="border-t border-white/[0.06] relative group">
       {item.type === "video" ? (
         <video src={item.url} controls className="w-full max-h-[28rem] object-cover" aria-label="Post video" />
       ) : (
@@ -85,7 +90,10 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? "bg-white w-3" : "bg-white/40"}`}
+            className={cn(
+              "w-1.5 h-1.5 rounded-full transition-all",
+              i === current ? "bg-white w-3" : "bg-white/40"
+            )}
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}
@@ -103,13 +111,19 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
 function CreatePostTrigger({ onClick }: { onClick: () => void }) {
   const user = useAuthStore((s) => s.user);
   return (
-    <button
+    <GlassCard
+      variant="interactive"
+      padding="sm"
+      className="mb-4 w-full flex items-center gap-3 group"
       onClick={onClick}
-      className="card p-4 mb-4 w-full flex items-center gap-3 hover:border-brand/40 transition-colors group"
+      role="button"
+      tabIndex={0}
     >
-      <div className="w-9 h-9 rounded-full bg-brand-muted border border-brand-border flex items-center justify-center text-brand font-semibold text-sm flex-shrink-0">
-        {user?.profile?.name?.[0]?.toUpperCase() ?? user?.email[0].toUpperCase()}
-      </div>
+      <Avatar className="h-9 w-9 text-sm">
+        <AvatarFallback>
+          {user?.profile?.name?.[0]?.toUpperCase() ?? user?.email[0].toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
       <span className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors flex-1 text-left">
         Share a moment, milestone, or thought…
       </span>
@@ -117,7 +131,7 @@ function CreatePostTrigger({ onClick }: { onClick: () => void }) {
         <ImageIcon size={18} />
         <Camera size={18} />
       </div>
-    </button>
+    </GlassCard>
   );
 }
 
@@ -207,45 +221,49 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="bg-dark-surface border border-dark-border rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-page-enter"
+      <GlassCard
+        variant="elevated"
+        padding="none"
+        className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-page-enter"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-dark-border flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08] flex-shrink-0">
           {canGoBack ? (
-            <button onClick={handleBack} className="text-zinc-400 hover:text-white transition-colors" aria-label="Back">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="h-8 w-8" aria-label="Back">
               <ArrowLeft size={20} />
-            </button>
+            </Button>
           ) : (
-            <div className="w-5" />
+            <div className="w-8" />
           )}
           <h2 className="text-sm font-semibold text-white">{stepTitle}</h2>
           {canGoNext ? (
-            <button onClick={() => setStep("details")} className="text-sm font-semibold text-brand hover:text-brand-hover transition-colors">
+            <Button variant="ghost" onClick={() => setStep("details")} className="text-sm font-semibold text-brand hover:text-brand-hover">
               Next
-            </button>
+            </Button>
           ) : step === "details" ? (
-            <button
+            <Button
+              variant="ghost"
               onClick={() => submit.mutate()}
               disabled={submit.isPending || (files.length === 0 && !caption.trim())}
-              className="text-sm font-semibold text-brand hover:text-brand-hover transition-colors disabled:opacity-40"
+              className="text-sm font-semibold text-brand hover:text-brand-hover disabled:opacity-40"
             >
               {submit.isPending ? "Sharing…" : "Share"}
-            </button>
+            </Button>
           ) : (
-            <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-zinc-400 hover:text-white">
               <X size={20} />
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Step 1: Select media */}
         {step === "select" && (
           <div
-            className={`flex-1 flex flex-col items-center justify-center p-8 min-h-[400px] transition-colors ${
-              dragOver ? "bg-brand/5 border-2 border-dashed border-brand" : ""
-            }`}
+            className={cn(
+              "flex-1 flex flex-col items-center justify-center p-8 min-h-[400px] transition-colors",
+              dragOver && "bg-brand/5 border-2 border-dashed border-brand"
+            )}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
@@ -255,12 +273,9 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
             </div>
             <h3 className="text-xl font-semibold text-white mb-1">Drag photos and videos here</h3>
             <p className="text-sm text-zinc-500 mb-6">Up to 10 files per post</p>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="btn-primary px-6 py-2.5 text-sm"
-            >
+            <Button onClick={() => fileRef.current?.click()}>
               Select from device
-            </button>
+            </Button>
             <input
               ref={fileRef}
               type="file"
@@ -319,13 +334,14 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {/* Thumbnail strip */}
-            <div className="px-3 py-3 border-t border-dark-border bg-dark-surface flex gap-2 items-center overflow-x-auto flex-shrink-0">
+            <div className="px-3 py-3 border-t border-white/[0.08] bg-white/[0.02] flex gap-2 items-center overflow-x-auto flex-shrink-0">
               {previews.map((p, i) => (
                 <div
                   key={i}
-                  className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-colors ${
+                  className={cn(
+                    "relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-colors",
                     i === activePreview ? "border-brand" : "border-transparent hover:border-zinc-600"
-                  }`}
+                  )}
                   onClick={() => setActivePreview(i)}
                 >
                   {p.type === "video" ? (
@@ -376,7 +392,7 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
               {files.length < 10 && (
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="flex-shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-dark-border hover:border-brand flex items-center justify-center text-zinc-500 hover:text-brand transition-colors"
+                  className="flex-shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-white/[0.08] hover:border-brand flex items-center justify-center text-zinc-500 hover:text-brand transition-colors"
                   aria-label="Add more media"
                 >
                   <Plus size={20} />
@@ -398,7 +414,7 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
         {step === "details" && (
           <div className="flex-1 flex flex-col sm:flex-row min-h-[400px]">
             {/* Preview side */}
-            <div className="sm:w-1/2 bg-black flex items-center justify-center border-b sm:border-b-0 sm:border-r border-dark-border relative">
+            <div className="sm:w-1/2 bg-black flex items-center justify-center border-b sm:border-b-0 sm:border-r border-white/[0.08] relative">
               {previews[activePreview] && (
                 previews[activePreview].type === "video" ? (
                   <video src={previews[activePreview].url} controls className="max-w-full max-h-[300px] sm:max-h-full object-contain" />
@@ -431,7 +447,10 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
                       <button
                         key={i}
                         onClick={() => setActivePreview(i)}
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === activePreview ? "bg-white w-3" : "bg-white/40"}`}
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full transition-all",
+                          i === activePreview ? "bg-white w-3" : "bg-white/40"
+                        )}
                         aria-label={`Go to slide ${i + 1}`}
                       />
                     ))}
@@ -454,14 +473,14 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
                   autoFocus
                 />
                 <div className="text-right">
-                  <span className={`text-[10px] ${caption.length > 450 ? "text-amber-400" : "text-zinc-600"}`}>
+                  <span className={cn("text-[10px]", caption.length > 450 ? "text-amber-400" : "text-zinc-600")}>
                     {caption.length}/500
                   </span>
                 </div>
               </div>
 
               {/* Location */}
-              <div className="px-4 py-3 border-t border-dark-border flex items-center gap-2">
+              <div className="px-4 py-3 border-t border-white/[0.08] flex items-center gap-2">
                 <MapPin size={16} className="text-zinc-500 flex-shrink-0" />
                 <input
                   value={location}
@@ -473,48 +492,46 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
               </div>
 
               {/* Visibility */}
-              <div className="px-4 py-3 border-t border-dark-border">
+              <div className="px-4 py-3 border-t border-white/[0.08]">
                 <p className="text-xs text-zinc-500 mb-2">Audience</p>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    variant={visibility === "public" ? "default" : "outline"}
+                    size="sm"
                     onClick={() => setVisibility("public")}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                      visibility === "public"
-                        ? "bg-brand text-white"
-                        : "bg-dark-hover text-zinc-400 border border-dark-border hover:border-zinc-600"
-                    }`}
+                    className="gap-1.5"
                   >
                     <Globe size={13} /> Everyone
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant={visibility === "connections" ? "default" : "outline"}
+                    size="sm"
                     onClick={() => setVisibility("connections")}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                      visibility === "connections"
-                        ? "bg-amber-600 text-white"
-                        : "bg-dark-hover text-zinc-400 border border-dark-border hover:border-zinc-600"
-                    }`}
+                    className={cn("gap-1.5", visibility === "connections" && "bg-amber-600 hover:bg-amber-700 shadow-amber-900/20")}
                   >
                     <Lock size={13} /> Connections only
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* File count */}
-              <div className="px-4 py-3 border-t border-dark-border flex items-center justify-between">
+              <div className="px-4 py-3 border-t border-white/[0.08] flex items-center justify-between">
                 <span className="text-xs text-zinc-500">
                   {files.length} {files.length === 1 ? "file" : "files"} selected
                 </span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setStep("arrange")}
-                  className="text-xs text-brand hover:text-brand-hover transition-colors"
+                  className="text-brand hover:text-brand-hover"
                 >
                   Edit media
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         )}
-      </div>
+      </GlassCard>
     </div>
   );
 }
@@ -526,84 +543,90 @@ function PostCard({ post, onLike, onShare }: { post: Post; onLike: (id: number) 
   );
 
   return (
-    <article className="card overflow-hidden animate-page-enter" aria-label={`Post by ${post.author_name}`}>
-      {/* Author header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-brand-muted border border-brand-border overflow-hidden flex-shrink-0 flex items-center justify-center text-brand font-semibold text-sm">
-            {post.author_avatar ? (
-              <img src={post.author_avatar} alt={post.author_name} className="w-full h-full object-cover" />
-            ) : (
-              <span>{post.author_name[0]}</span>
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-semibold text-white">{post.author_name}</p>
-              {post.visibility === "connections" && (
-                <Lock size={10} className="text-amber-400" aria-label="Connections only" />
-              )}
+    <GlassCard padding="none" className="overflow-hidden animate-page-enter">
+      <article aria-label={`Post by ${post.author_name}`}>
+        {/* Author header */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <Avatar className="h-9 w-9 text-sm">
+              {post.author_avatar && <AvatarImage src={post.author_avatar} alt={post.author_name} />}
+              <AvatarFallback>{post.author_name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-white">{post.author_name}</p>
+                {post.visibility === "connections" && (
+                  <Lock size={10} className="text-amber-400" aria-label="Connections only" />
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                {post.location && (
+                  <>
+                    <span>·</span>
+                    <span className="flex items-center gap-0.5"><MapPin size={8} />{post.location}</span>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
-              <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-              {post.location && (
-                <>
-                  <span>·</span>
-                  <span className="flex items-center gap-0.5"><MapPin size={8} />{post.location}</span>
-                </>
-              )}
-            </div>
           </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-600 hover:text-white" aria-label="More options">
+            <MoreHorizontal size={16} />
+          </Button>
         </div>
-        <button aria-label="More options" className="text-zinc-600 hover:text-white transition-colors rounded-lg p-1">
-          <MoreHorizontal size={16} />
-        </button>
-      </div>
 
-      {/* Caption */}
-      {post.caption && (
-        <p className="px-4 pb-2 text-sm text-zinc-300 leading-relaxed">{post.caption}</p>
-      )}
-
-      {/* Media carousel */}
-      <MediaCarousel media={media} />
-
-      {/* Reactions */}
-      <div className="flex items-center gap-1 px-4 py-3 border-t border-dark-border">
-        <button
-          onClick={() => onLike(post.id)}
-          aria-label={post.liked_by_me ? `Unlike post` : `Like post`}
-          aria-pressed={post.liked_by_me}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            post.liked_by_me
-              ? "text-rose-400 bg-rose-900/30 border border-rose-800/30"
-              : "text-zinc-500 hover:text-rose-400 hover:bg-rose-900/20 border border-transparent"
-          }`}
-        >
-          <Heart size={14} fill={post.liked_by_me ? "currentColor" : "none"} aria-hidden="true" />
-          {post.likes_count}
-        </button>
-
-        <button
-          aria-label={`${post.comments_count} comments`}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-500 hover:text-brand hover:bg-brand-muted border border-transparent transition-all"
-        >
-          <MessageCircle size={14} aria-hidden="true" />
-          {post.comments_count}
-        </button>
-
-        {onShare && (
-          <button
-            onClick={() => onShare(post)}
-            aria-label="Share post in message"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-500 hover:text-white border border-transparent transition-all ml-auto"
-          >
-            <Send size={14} aria-hidden="true" />
-            Share
-          </button>
+        {/* Caption */}
+        {post.caption && (
+          <p className="px-4 pb-2 text-sm text-zinc-300 leading-relaxed">{post.caption}</p>
         )}
-      </div>
-    </article>
+
+        {/* Media carousel */}
+        <MediaCarousel media={media} />
+
+        {/* Reactions */}
+        <div className="flex items-center gap-1 px-4 py-3 border-t border-white/[0.06]">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onLike(post.id)}
+            aria-label={post.liked_by_me ? `Unlike post` : `Like post`}
+            aria-pressed={post.liked_by_me}
+            className={cn(
+              "gap-1.5 rounded-xl",
+              post.liked_by_me
+                ? "text-rose-400 bg-rose-900/30 border border-rose-800/30 hover:bg-rose-900/40"
+                : "text-zinc-500 hover:text-rose-400 hover:bg-rose-900/20"
+            )}
+          >
+            <Heart size={14} fill={post.liked_by_me ? "currentColor" : "none"} aria-hidden="true" />
+            {post.likes_count}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`${post.comments_count} comments`}
+            className="gap-1.5 rounded-xl text-zinc-500 hover:text-brand hover:bg-brand-muted"
+          >
+            <MessageCircle size={14} aria-hidden="true" />
+            {post.comments_count}
+          </Button>
+
+          {onShare && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onShare(post)}
+              aria-label="Share post in message"
+              className="gap-1.5 rounded-xl text-zinc-500 hover:text-white ml-auto"
+            >
+              <Send size={14} aria-hidden="true" />
+              Share
+            </Button>
+          )}
+        </div>
+      </article>
+    </GlassCard>
   );
 }
 
@@ -637,22 +660,26 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-dark-surface border border-dark-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="px-4 py-3 border-b border-dark-border">
+      <GlassCard
+        variant="elevated"
+        padding="none"
+        className="rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[70vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-4 py-3 border-b border-white/[0.08]">
           <h3 className="text-sm font-semibold text-white text-center">Share Post</h3>
         </div>
 
         <div className="px-4 py-2">
-          <input
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search connections..."
-            className="w-full bg-dark-hover border border-dark-border rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand"
           />
         </div>
 
         {/* Post preview */}
-        <div className="mx-4 mb-2 p-2.5 bg-dark-hover rounded-lg border border-dark-border flex gap-2.5">
+        <div className="mx-4 mb-2 p-2.5 bg-white/[0.04] rounded-lg border border-white/[0.08] flex gap-2.5">
           {(post.media?.[0]?.url || post.media_url) && (
             <img src={post.media?.[0]?.url || post.media_url} alt="" className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
           )}
@@ -674,15 +701,12 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
                 key={connId}
                 onClick={() => handleShare(connId)}
                 disabled={sending === connId}
-                className="w-full flex items-center gap-3 py-2.5 px-1 hover:bg-dark-hover rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 py-2.5 px-1 hover:bg-white/[0.04] rounded-lg transition-colors"
               >
-                <div className="w-9 h-9 rounded-full bg-brand-muted border border-brand-border flex-shrink-0 flex items-center justify-center text-brand font-semibold text-sm overflow-hidden">
-                  {other?.avatar_url ? (
-                    <img src={other.avatar_url} alt={other.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{other?.name?.[0] || "?"}</span>
-                  )}
-                </div>
+                <Avatar className="h-9 w-9 text-sm">
+                  {other?.avatar_url && <AvatarImage src={other.avatar_url} alt={other.name} />}
+                  <AvatarFallback>{other?.name?.[0] || "?"}</AvatarFallback>
+                </Avatar>
                 <span className="text-sm text-white flex-1 text-left">{other?.name}</span>
                 <span className="text-xs text-brand font-medium">
                   {sending === connId ? "Sending..." : "Send"}
@@ -692,10 +716,12 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
           })}
         </div>
 
-        <div className="px-4 py-3 border-t border-dark-border">
-          <button onClick={onClose} className="w-full py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
+        <div className="px-4 py-3 border-t border-white/[0.08]">
+          <Button variant="ghost" className="w-full text-zinc-400 hover:text-white" onClick={onClose}>
+            Cancel
+          </Button>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }
@@ -732,18 +758,18 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
       <div className={gridView ? "grid grid-cols-3 gap-0.5" : "space-y-4"}>
         {[1, 2, 3, 4, 5, 6].map((i) =>
           gridView ? (
-            <div key={i} className="aspect-square bg-dark-hover animate-pulse" />
+            <div key={i} className="aspect-square bg-white/[0.04] animate-pulse" />
           ) : (
-            <div key={i} className="card p-4 space-y-3 animate-pulse">
+            <GlassCard key={i} padding="sm" className="space-y-3 animate-pulse">
               <div className="flex gap-2">
-                <div className="w-9 h-9 rounded-full bg-dark-hover" />
+                <div className="w-9 h-9 rounded-full bg-white/[0.06]" />
                 <div className="space-y-1.5 flex-1">
-                  <div className="h-3.5 bg-dark-hover rounded w-24" />
-                  <div className="h-2.5 bg-dark-hover rounded w-16" />
+                  <div className="h-3.5 bg-white/[0.06] rounded w-24" />
+                  <div className="h-2.5 bg-white/[0.06] rounded w-16" />
                 </div>
               </div>
-              <div className="h-40 bg-dark-hover rounded-xl" />
-            </div>
+              <div className="h-40 bg-white/[0.06] rounded-xl" />
+            </GlassCard>
           )
         )}
       </div>
@@ -766,7 +792,7 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
             return (
               <button
                 key={post.id}
-                className="aspect-square relative group overflow-hidden bg-dark-hover"
+                className="aspect-square relative group overflow-hidden bg-white/[0.04]"
                 aria-label={`Post: ${post.caption?.slice(0, 40) || "Media"}`}
               >
                 {thumb ? (

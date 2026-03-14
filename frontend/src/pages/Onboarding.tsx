@@ -3,10 +3,17 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { profilesService } from "../services/profiles.service";
+import { profilesService } from "@/services/profiles.service";
 import { useNavigate } from "react-router-dom";
-import { IntentBadge } from "../components/shared/IntentBadge";
-import { AuroraBg } from "../components/ui/AuroraBg";
+import { IntentBadge } from "@/components/shared/IntentBadge";
+import { AuroraBg } from "@/components/ui/AuroraBg";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Chip } from "@/components/ui/chip";
+import { cn } from "@/lib/utils";
 import { Camera, Check, ChevronRight, ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -116,24 +123,25 @@ export function OnboardingPage() {
         <div className="flex items-center gap-1.5 mb-2">
           {STEPS.map((s, i) => (
             <div key={s.id} className="flex items-center flex-1">
-              <div className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all flex-shrink-0 ${
+              <div className={cn(
+                "flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all flex-shrink-0",
                 step > s.id
                   ? "bg-brand text-white"
                   : step === s.id
                   ? "bg-brand/20 border-2 border-brand text-brand"
                   : "bg-dark-hover border border-dark-border text-zinc-600"
-              }`}>
+              )}>
                 {step > s.id ? <Check size={12} /> : s.id}
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-1 rounded-full transition-all ${step > s.id ? "bg-brand" : "bg-dark-border"}`} />
+                <div className={cn("flex-1 h-0.5 mx-1 rounded-full transition-all", step > s.id ? "bg-brand" : "bg-dark-border")} />
               )}
             </div>
           ))}
         </div>
         <div className="flex justify-between mb-5 px-0.5">
           {STEPS.map((s) => (
-            <span key={s.id} className={`text-[10px] font-medium flex-1 text-center transition-colors ${step >= s.id ? "text-zinc-300" : "text-zinc-700"}`}>
+            <span key={s.id} className={cn("text-[10px] font-medium flex-1 text-center transition-colors", step >= s.id ? "text-zinc-300" : "text-zinc-700")}>
               {s.label}
             </span>
           ))}
@@ -145,9 +153,9 @@ export function OnboardingPage() {
         </div>
 
         <form onSubmit={handleSubmit((d) => create.mutate(d))}>
-          <div className="card p-6 sm:p-8">
+          <GlassCard padding="lg">
 
-            {/* ── Step 1: Basic info ── */}
+            {/* -- Step 1: Basic info -- */}
             {step === 1 && (
               <fieldset className="space-y-4 border-none p-0">
                 <legend className="sr-only">Basic information</legend>
@@ -158,20 +166,20 @@ export function OnboardingPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2 space-y-1">
-                    <label htmlFor="name" className="text-sm font-medium text-zinc-300">Full name <span className="text-brand" aria-hidden="true">*</span></label>
-                    <input id="name" {...register("name")} className="input" placeholder="Your first name" aria-required="true" aria-describedby="name-err" />
+                    <Label htmlFor="name">Full name <span className="text-brand" aria-hidden="true">*</span></Label>
+                    <Input id="name" {...register("name")} placeholder="Your first name" aria-required="true" aria-describedby="name-err" />
                     {errors.name && <p id="name-err" role="alert" className="text-xs text-rose-400">{errors.name.message}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="age" className="text-sm font-medium text-zinc-300">Age <span className="text-brand" aria-hidden="true">*</span></label>
-                    <input id="age" {...register("age")} type="number" min="18" max="99" className="input" placeholder="25" aria-required="true" aria-describedby="age-err" />
+                    <Label htmlFor="age">Age <span className="text-brand" aria-hidden="true">*</span></Label>
+                    <Input id="age" {...register("age")} type="number" min={18} max={99} placeholder="25" aria-required="true" aria-describedby="age-err" />
                     {errors.age && <p id="age-err" role="alert" className="text-xs text-rose-400">{errors.age.message}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="gender" className="text-sm font-medium text-zinc-300">Gender <span className="text-brand" aria-hidden="true">*</span></label>
-                    <select id="gender" {...register("gender")} className="input bg-dark-input" aria-required="true">
+                    <Label htmlFor="gender">Gender <span className="text-brand" aria-hidden="true">*</span></Label>
+                    <select id="gender" {...register("gender")} className="flex h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-sm px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" aria-required="true">
                       <option value="">Select</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
@@ -181,42 +189,41 @@ export function OnboardingPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="city" className="text-sm font-medium text-zinc-300">City <span className="text-brand" aria-hidden="true">*</span></label>
-                    <input id="city" {...register("city")} className="input" placeholder="Mumbai" aria-required="true" />
+                    <Label htmlFor="city">City <span className="text-brand" aria-hidden="true">*</span></Label>
+                    <Input id="city" {...register("city")} placeholder="Mumbai" aria-required="true" />
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="occupation" className="text-sm font-medium text-zinc-300">Occupation</label>
-                    <input id="occupation" {...register("occupation")} className="input" placeholder="Engineer" />
+                    <Label htmlFor="occupation">Occupation</Label>
+                    <Input id="occupation" {...register("occupation")} placeholder="Engineer" />
                   </div>
 
                   <div className="col-span-2 space-y-1">
-                    <label htmlFor="bio" className="text-sm font-medium text-zinc-300">
+                    <Label htmlFor="bio">
                       Short bio <span className="text-zinc-600 font-normal">(optional)</span>
-                    </label>
-                    <textarea
+                    </Label>
+                    <Textarea
                       id="bio"
                       {...register("bio")}
                       rows={3}
                       maxLength={300}
-                      className="input resize-none"
                       placeholder="A little about who you are…"
                     />
                     <p className="text-[10px] text-zinc-600 text-right">{watch("bio")?.length ?? 0}/300</p>
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => goNext(["name", "age", "gender", "city"])}
-                  className="btn-primary w-full flex items-center justify-center gap-2"
+                  className="w-full flex items-center justify-center gap-2"
                 >
                   Continue <ChevronRight size={16} />
-                </button>
+                </Button>
               </fieldset>
             )}
 
-            {/* ── Step 2: Intent ── */}
+            {/* -- Step 2: Intent -- */}
             {step === 2 && (
               <div className="space-y-5">
                 <div>
@@ -240,14 +247,15 @@ export function OnboardingPage() {
                             role="radio"
                             aria-checked={active}
                             onClick={() => field.onChange(intent.value)}
-                            className={`p-3.5 rounded-xl border text-left transition-all ${
+                            className={cn(
+                              "p-3.5 rounded-xl border text-left transition-all",
                               active
                                 ? "border-brand bg-brand-muted shadow-sm shadow-brand/20"
                                 : "border-dark-border hover:border-zinc-600 bg-dark-hover"
-                            }`}
+                            )}
                           >
-                            <i className={`${intent.icon} text-lg mb-1.5 block ${active ? "text-brand" : "text-zinc-500"}`} aria-hidden="true" />
-                            <p className={`text-xs font-semibold ${active ? "text-white" : "text-zinc-400"}`}>{intent.label}</p>
+                            <i className={cn(intent.icon, "text-lg mb-1.5 block", active ? "text-brand" : "text-zinc-500")} aria-hidden="true" />
+                            <p className={cn("text-xs font-semibold", active ? "text-white" : "text-zinc-400")}>{intent.label}</p>
                           </button>
                         );
                       })}
@@ -257,22 +265,22 @@ export function OnboardingPage() {
                 {errors.intent && <p role="alert" className="text-xs text-rose-400">{errors.intent.message}</p>}
 
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setStep(1)} className="btn-secondary flex-1 flex items-center justify-center gap-2">
+                  <Button type="button" variant="secondary" onClick={() => setStep(1)} className="flex-1 flex items-center justify-center gap-2">
                     <ChevronLeft size={16} /> Back
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     disabled={!selectedIntent}
                     onClick={() => goNext(["intent"])}
-                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
                     Continue <ChevronRight size={16} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
 
-            {/* ── Step 3: Interests ── */}
+            {/* -- Step 3: Interests -- */}
             {step === 3 && (
               <div className="space-y-5">
                 <div>
@@ -288,9 +296,9 @@ export function OnboardingPage() {
                       {INTERESTS.map((interest) => {
                         const active = field.value.includes(interest.value);
                         return (
-                          <button
+                          <Chip
                             key={interest.value}
-                            type="button"
+                            active={active}
                             aria-pressed={active}
                             onClick={() =>
                               field.onChange(
@@ -299,15 +307,10 @@ export function OnboardingPage() {
                                   : [...field.value, interest.value]
                               )
                             }
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all ${
-                              active
-                                ? "bg-brand text-white border-brand shadow-sm"
-                                : "border-dark-border text-zinc-400 hover:border-zinc-500 hover:text-white"
-                            }`}
                           >
-                            <i className={`${interest.icon} text-[10px]`} aria-hidden="true" />
+                            <i className={cn(interest.icon, "text-[10px]")} aria-hidden="true" />
                             {interest.value}
-                          </button>
+                          </Chip>
                         );
                       })}
                     </div>
@@ -316,27 +319,27 @@ export function OnboardingPage() {
                 {errors.interests && <p role="alert" className="text-xs text-rose-400">{errors.interests.message}</p>}
 
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1 flex items-center justify-center gap-2">
+                  <Button type="button" variant="secondary" onClick={() => setStep(2)} className="flex-1 flex items-center justify-center gap-2">
                     <ChevronLeft size={16} /> Back
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     disabled={selectedInterests.length === 0}
                     onClick={() => goNext(["interests"])}
-                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
                     Continue <ChevronRight size={16} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
 
-            {/* ── Step 4: Photo ── */}
+            {/* -- Step 4: Photo -- */}
             {step === 4 && (
               <div className="space-y-5">
                 <div>
                   <h2 className="text-xl font-bold text-white">Add a profile photo</h2>
-                  <p className="text-sm text-zinc-500 mt-1">Profiles with photos get 3× more connections.</p>
+                  <p className="text-sm text-zinc-500 mt-1">Profiles with photos get 3x more connections.</p>
                 </div>
 
                 {/* Photo upload area */}
@@ -380,19 +383,19 @@ export function OnboardingPage() {
                   )}
                 </div>
 
-                <div className="bg-brand-muted border border-brand-border rounded-xl p-3 text-xs text-zinc-400 flex gap-2">
+                <GlassCard variant="brand" padding="sm" className="text-xs text-zinc-400 flex gap-2">
                   <i className="fa-solid fa-shield-halved text-brand mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>Your photo is only visible to verified users who match your intent. You can change it anytime in Settings.</span>
-                </div>
+                </GlassCard>
 
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setStep(3)} className="btn-secondary flex-1 flex items-center justify-center gap-2">
+                  <Button type="button" variant="secondary" onClick={() => setStep(3)} className="flex-1 flex items-center justify-center gap-2">
                     <ChevronLeft size={16} /> Back
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
                     disabled={create.isPending}
-                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
                     {create.isPending ? (
                       <>
@@ -405,11 +408,11 @@ export function OnboardingPage() {
                         Start connecting
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
-          </div>
+          </GlassCard>
         </form>
       </div>
     </div>

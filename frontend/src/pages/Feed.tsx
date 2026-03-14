@@ -1,5 +1,5 @@
-import { AuroraBg } from "../components/ui/AuroraBg";
-import { PostFeed } from "../components/shared/PostFeed";
+import { AuroraBg } from "@/components/ui/AuroraBg";
+import { PostFeed } from "@/components/shared/PostFeed";
 
 export function FeedPage() {
   return (

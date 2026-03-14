@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Flag, Users, BarChart2, Settings2, ArrowLeft } from "lucide-react";
-import clsx from "clsx";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const ADMIN_NAV = [
   { to: "/admin",         icon: BarChart2,  label: "Overview",   exact: true },
@@ -26,7 +27,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               to={to}
               end={exact}
               className={({ isActive }) =>
-                clsx(
+                cn(
                   "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all",
                   isActive
                     ? "bg-rose-950/40 text-rose-400 border border-rose-800/30"
@@ -40,12 +41,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <div className="px-2 py-3 border-t border-dark-border">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate("/discover")}
-            className="flex items-center gap-2 px-3 py-2 w-full text-sm text-zinc-600 hover:text-white rounded-xl hover:bg-dark-hover transition-all"
+            className="w-full justify-start text-zinc-600 hover:text-white"
           >
             <ArrowLeft size={14} /> Back to app
-          </button>
+          </Button>
         </div>
       </div>
 

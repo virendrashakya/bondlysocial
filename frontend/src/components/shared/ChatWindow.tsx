@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, ImageIcon, Smile, Heart, Play } from "lucide-react";
-import { messagesService } from "../../services/messages.service";
-import { useConversationChannel } from "../../hooks/useActionCable";
-import { useAuthStore } from "../../store/authStore";
+import { messagesService } from "@/services/messages.service";
+import { useConversationChannel } from "@/hooks/useActionCable";
+import { useAuthStore } from "@/store/authStore";
 import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ChatWindowProps {
   connectionId: number;
@@ -22,16 +26,16 @@ interface ReferencedPost {
   media_count: number;
 }
 
-const QUICK_REACTIONS = ["👋", "❤️", "😂", "🔥", "👏", "🙏"];
+const QUICK_REACTIONS = ["\u{1F44B}", "\u{2764}\u{FE0F}", "\u{1F602}", "\u{1F525}", "\u{1F44F}", "\u{1F64F}"];
 
 function MessageDateDivider({ date }: { date: string }) {
   const d = new Date(date);
   const label = isToday(d) ? "Today" : isYesterday(d) ? "Yesterday" : format(d, "MMM d, yyyy");
   return (
     <div className="flex items-center gap-3 my-3" role="separator" aria-label={label}>
-      <div className="flex-1 h-px bg-dark-border" />
+      <div className="flex-1 h-px bg-white/[0.06]" />
       <span className="text-[10px] text-zinc-600 font-medium">{label}</span>
-      <div className="flex-1 h-px bg-dark-border" />
+      <div className="flex-1 h-px bg-white/[0.06]" />
     </div>
   );
 }
@@ -40,9 +44,10 @@ function MessageDateDivider({ date }: { date: string }) {
 function SharedPostCard({ post, isOwn }: { post: ReferencedPost; isOwn: boolean }) {
   return (
     <div
-      className={`rounded-xl overflow-hidden mb-1.5 border ${
-        isOwn ? "border-white/10" : "border-dark-border"
-      }`}
+      className={cn(
+        "rounded-xl overflow-hidden mb-1.5 border",
+        isOwn ? "border-white/10" : "border-white/[0.08]"
+      )}
     >
       {/* Post media thumbnail */}
       {post.media_url && (
@@ -68,12 +73,12 @@ function SharedPostCard({ post, isOwn }: { post: ReferencedPost; isOwn: boolean 
       )}
 
       {/* Post info */}
-      <div className={`px-3 py-2 ${isOwn ? "bg-white/5" : "bg-dark-hover"}`}>
-        <p className={`text-[10px] font-medium ${isOwn ? "text-white/70" : "text-zinc-500"}`}>
+      <div className={cn("px-3 py-2", isOwn ? "bg-white/5" : "bg-white/[0.04]")}>
+        <p className={cn("text-[10px] font-medium", isOwn ? "text-white/70" : "text-zinc-500")}>
           {post.author_name}'s post
         </p>
         {post.caption && (
-          <p className={`text-xs mt-0.5 line-clamp-2 ${isOwn ? "text-white/80" : "text-zinc-400"}`}>
+          <p className={cn("text-xs mt-0.5 line-clamp-2", isOwn ? "text-white/80" : "text-zinc-400")}>
             {post.caption}
           </p>
         )}
@@ -134,14 +139,11 @@ export function ChatWindow({ connectionId, otherUserName, otherUser }: ChatWindo
   return (
     <div className="flex flex-col h-full bg-dark-bg" aria-label={`Chat with ${otherUserName}`}>
       {/* Desktop header */}
-      <div className="hidden md:flex items-center gap-3 px-5 py-3.5 border-b border-dark-border bg-dark-surface">
-        <div className="w-9 h-9 rounded-full bg-brand-muted border border-brand-border overflow-hidden flex-shrink-0 flex items-center justify-center text-brand font-semibold">
-          {otherUser?.avatar_url ? (
-            <img src={otherUser.avatar_url} alt={otherUserName} className="w-full h-full object-cover" />
-          ) : (
-            <span>{otherUserName[0]}</span>
-          )}
-        </div>
+      <div className="hidden md:flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
+        <Avatar className="h-9 w-9">
+          {otherUser?.avatar_url && <AvatarImage src={otherUser.avatar_url} alt={otherUserName} />}
+          <AvatarFallback>{otherUserName[0]}</AvatarFallback>
+        </Avatar>
         <div>
           <p className="font-semibold text-white text-sm">{otherUserName}</p>
           <p className="text-[11px] text-zinc-500">
@@ -203,25 +205,33 @@ export function ChatWindow({ connectionId, otherUserName, otherUser }: ChatWindo
           return (
             <div key={msg.id}>
               {showDivider && <MessageDateDivider date={attrs.created_at} />}
-              <div className={`flex ${isOwn ? "justify-end" : "justify-start"} ${isLastInGroup ? "mb-3" : "mb-0.5"}`}>
+              <div className={cn("flex", isOwn ? "justify-end" : "justify-start", isLastInGroup ? "mb-3" : "mb-0.5")}>
                 {/* Other user avatar for last in group */}
                 {!isOwn && isLastInGroup && (
-                  <div className="w-7 h-7 rounded-full bg-brand-muted border border-brand-border overflow-hidden flex-shrink-0 mr-2 mt-auto flex items-center justify-center text-brand text-xs font-semibold">
-                    {otherUser?.avatar_url ? (
-                      <img src={otherUser.avatar_url} alt={otherUserName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{otherUserName[0]}</span>
-                    )}
-                  </div>
+                  <Avatar className="h-7 w-7 mr-2 mt-auto text-xs">
+                    {otherUser?.avatar_url && <AvatarImage src={otherUser.avatar_url} alt={otherUserName} />}
+                    <AvatarFallback className="text-xs">{otherUserName[0]}</AvatarFallback>
+                  </Avatar>
                 )}
                 {!isOwn && !isLastInGroup && <div className="w-7 mr-2" />}
 
                 <div
-                  className={`max-w-[72%] sm:max-w-sm text-sm leading-relaxed ${
+                  className={cn(
+                    "max-w-[72%] sm:max-w-sm text-sm leading-relaxed",
                     referencedPost
-                      ? `${isOwn ? "bg-brand text-white rounded-2xl rounded-br-sm" : "bg-dark-surface text-white border border-dark-border rounded-2xl rounded-bl-sm"} overflow-hidden`
-                      : `px-3.5 py-2 ${isOwn ? "bg-brand text-white rounded-2xl rounded-br-sm" : "bg-dark-surface text-white border border-dark-border rounded-2xl rounded-bl-sm"}`
-                  }`}
+                      ? cn(
+                          isOwn
+                            ? "bg-brand text-white rounded-2xl rounded-br-sm"
+                            : "bg-white/[0.04] backdrop-blur-sm text-white border border-white/[0.08] rounded-2xl rounded-bl-sm",
+                          "overflow-hidden"
+                        )
+                      : cn(
+                          "px-3.5 py-2",
+                          isOwn
+                            ? "bg-brand text-white rounded-2xl rounded-br-sm"
+                            : "bg-white/[0.04] backdrop-blur-sm text-white border border-white/[0.08] rounded-2xl rounded-bl-sm"
+                        )
+                  )}
                 >
                   {/* Referenced post card */}
                   {referencedPost && (
@@ -237,13 +247,17 @@ export function ChatWindow({ connectionId, otherUserName, otherUser }: ChatWindo
 
                   {/* Shared post label if no body */}
                   {!attrs.body && referencedPost && (
-                    <p className={`px-3.5 py-1 text-xs ${isOwn ? "text-pink-200/70" : "text-zinc-500"}`}>
+                    <p className={cn("px-3.5 py-1 text-xs", isOwn ? "text-pink-200/70" : "text-zinc-500")}>
                       <Heart size={10} className="inline mr-1" />Shared a post
                     </p>
                   )}
 
                   {/* Timestamp */}
-                  <p className={`text-[10px] mt-0.5 text-right ${referencedPost ? "px-3.5 pb-2" : ""} ${isOwn ? "text-pink-200/70" : "text-zinc-600"}`}>
+                  <p className={cn(
+                    "text-[10px] mt-0.5 text-right",
+                    referencedPost && "px-3.5 pb-2",
+                    isOwn ? "text-pink-200/70" : "text-zinc-600"
+                  )}>
                     {formatDistanceToNow(new Date(attrs.created_at), { addSuffix: true })}
                   </p>
                 </div>
@@ -256,7 +270,7 @@ export function ChatWindow({ connectionId, otherUserName, otherUser }: ChatWindo
 
       {/* Quick reactions emoji strip */}
       {showEmoji && (
-        <div className="flex gap-3 px-4 py-2 border-t border-dark-border bg-dark-surface">
+        <div className="flex gap-3 px-4 py-2 border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
           {QUICK_REACTIONS.map((emoji) => (
             <button
               key={emoji}
@@ -273,48 +287,54 @@ export function ChatWindow({ connectionId, otherUserName, otherUser }: ChatWindo
       {/* Input bar */}
       <form
         onSubmit={handleSubmit}
-        className="px-3 py-3 border-t border-dark-border bg-dark-surface flex items-center gap-2"
+        className="px-3 py-3 border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl flex items-center gap-2"
         aria-label="Send a message"
       >
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => setShowEmoji((v) => !v)}
           aria-label="Quick reactions"
           aria-expanded={showEmoji}
-          className="p-2 text-zinc-500 hover:text-brand transition-colors rounded-xl"
+          className="h-9 w-9 text-zinc-500 hover:text-brand"
         >
           <Smile size={18} />
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           aria-label="Attach image (coming soon)"
           disabled
-          className="p-2 text-zinc-700 rounded-xl cursor-not-allowed"
+          className="h-9 w-9 text-zinc-700"
         >
           <ImageIcon size={18} />
-        </button>
+        </Button>
 
-        <input
+        <Input
           ref={inputRef}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={`Message ${otherUserName}...`}
-          className="flex-1 rounded-xl border border-dark-border bg-dark-input px-4 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand transition-colors"
+          className="flex-1 rounded-xl"
           maxLength={2000}
           aria-label="Message input"
           autoComplete="off"
         />
 
-        <button
+        <Button
           type="submit"
+          variant="pink"
+          size="icon"
           disabled={!body.trim() || send.isPending}
           aria-label="Send message"
-          className="w-9 h-9 flex items-center justify-center bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-40 transition-all active:scale-95"
+          className="h-9 w-9"
         >
           <Send size={15} />
-        </button>
+        </Button>
       </form>
     </div>
   );

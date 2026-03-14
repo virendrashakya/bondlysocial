@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import clsx from "clsx";
+import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/discover",      faIcon: "fa-solid fa-compass",   label: "Discover"  },
@@ -14,13 +14,13 @@ interface Props { unread?: number }
 export function BottomNav({ unread = 0 }: Props) {
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 safe-area-bottom" aria-label="Mobile navigation">
-      <div className="flex bg-[#0F0F0F]/90 backdrop-blur-xl border-t border-dark-border">
+      <div className="flex bg-[#0F0F0F]/90 backdrop-blur-xl border-t border-white/[0.08]">
         {NAV.map(({ to, faIcon, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              clsx(
+              cn(
                 "flex-1 flex flex-col items-center justify-center py-2.5 gap-[3px] text-[10px] font-medium transition-all relative",
                 isActive ? "text-brand" : "text-zinc-600 hover:text-zinc-300"
               )

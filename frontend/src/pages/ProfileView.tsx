@@ -2,12 +2,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck, MapPin, Briefcase, Flag, Ban, Grid3X3, List, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, MessageSquare } from "lucide-react";
 import { useState } from "react";
-import { profilesService } from "../services/profiles.service";
-import { connectionsService } from "../services/connections.service";
-import { api } from "../lib/api";
-import { IntentBadge } from "../components/shared/IntentBadge";
-import { ReportModal } from "../components/shared/ReportModal";
-import { PostFeed } from "../components/shared/PostFeed";
+import { profilesService } from "@/services/profiles.service";
+import { connectionsService } from "@/services/connections.service";
+import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { IntentBadge } from "@/components/shared/IntentBadge";
+import { ReportModal } from "@/components/shared/ReportModal";
+import { PostFeed } from "@/components/shared/PostFeed";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import toast from "react-hot-toast";
 
 export function ProfileViewPage() {
@@ -56,7 +62,7 @@ export function ProfileViewPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3 text-zinc-500">
         <p>Profile not found.</p>
-        <button onClick={() => navigate(-1)} className="btn-secondary">Go back</button>
+        <Button variant="secondary" onClick={() => navigate(-1)}>Go back</Button>
       </div>
     );
   }
@@ -66,29 +72,31 @@ export function ProfileViewPage() {
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
       {/* Back */}
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white mb-4 transition-colors"
+        className="mb-4 text-zinc-500 hover:text-white"
       >
         <ArrowLeft size={16} /> Back
-      </button>
+      </Button>
 
-      <div className="card overflow-hidden">
+      <GlassCard padding="none" className="overflow-hidden">
         {/* Avatar */}
         <div className="relative">
           <div className="h-56 bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center">
             {p.avatar_url ? (
               <img src={p.avatar_url} alt={p.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-brand-muted border border-brand-border flex items-center justify-center text-4xl font-bold text-brand">
-                {p.name?.[0]}
-              </div>
+              <Avatar className="w-24 h-24 text-4xl">
+                <AvatarFallback>{p.name?.[0]}</AvatarFallback>
+              </Avatar>
             )}
           </div>
           {p.verified && (
-            <div className="absolute top-3 right-3 flex items-center gap-1 bg-dark-card/90 backdrop-blur-sm rounded-full px-2.5 py-1 text-xs font-medium text-emerald-400 border border-emerald-700/40">
+            <Badge variant="success" className="absolute top-3 right-3 bg-dark-card/90 backdrop-blur-sm">
               <ShieldCheck size={12} /> Verified
-            </div>
+            </Badge>
           )}
         </div>
 
@@ -119,9 +127,9 @@ export function ProfileViewPage() {
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">Interests</p>
               <div className="flex flex-wrap gap-1.5">
                 {p.interests.map((i: string) => (
-                  <span key={i} className="text-xs bg-dark-hover text-zinc-400 border border-dark-border rounded-full px-2.5 py-1">
+                  <Badge key={i} variant="default" size="default">
                     {i}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -192,9 +200,9 @@ export function ProfileViewPage() {
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {p.languages_spoken.map((lang: string) => (
-                      <span key={lang} className="text-xs bg-dark-hover text-zinc-400 border border-dark-border rounded-full px-2.5 py-1">
+                      <Badge key={lang} variant="info" size="default">
                         {lang}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -204,9 +212,9 @@ export function ProfileViewPage() {
               {p.appearance_tags?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {p.appearance_tags.map((tag: string) => (
-                    <span key={tag} className="text-xs bg-violet-900/20 text-violet-400 border border-violet-800/30 rounded-full px-2.5 py-1 capitalize">
+                    <Badge key={tag} variant="violet" size="default" className="capitalize">
                       {tag.replace(/_/g, " ")}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               )}
@@ -215,53 +223,67 @@ export function ProfileViewPage() {
 
           {/* Actions */}
           <div className="flex gap-2 pt-2">
-            <button
+            <Button
               onClick={() => connect.mutate()}
               disabled={connect.isPending}
-              className="btn-primary flex-1"
+              className="flex-1"
             >
               {connect.isPending ? "Sending..." : "Send Connection Request"}
-            </button>
+            </Button>
           </div>
 
           {/* Safety actions */}
-          <div className="flex gap-3 pt-1 border-t border-dark-border">
-            <button
+          <Separator />
+          <div className="flex gap-3 pt-1">
+            <Button
+              variant="glass"
+              size="xs"
               onClick={() => setShowReport(true)}
-              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-amber-400 transition-colors"
+              className="text-zinc-500 hover:text-amber-400"
             >
               <Flag size={13} /> Report
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="destructive"
+              size="xs"
               onClick={() => block.mutate()}
               disabled={block.isPending}
-              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-400 transition-colors"
             >
               <Ban size={13} /> Block
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Media Gallery */}
       <div className="mt-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-white">Posts</h3>
           <div className="flex gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setViewMode("grid")}
               aria-label="Grid view"
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "text-brand bg-brand-muted" : "text-zinc-500 hover:text-white"}`}
+              className={cn(
+                "h-8 w-8",
+                viewMode === "grid" ? "text-brand bg-brand-muted" : "text-zinc-500 hover:text-white"
+              )}
             >
               <Grid3X3 size={16} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setViewMode("list")}
               aria-label="List view"
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "text-brand bg-brand-muted" : "text-zinc-500 hover:text-white"}`}
+              className={cn(
+                "h-8 w-8",
+                viewMode === "list" ? "text-brand bg-brand-muted" : "text-zinc-500 hover:text-white"
+              )}
             >
               <List size={16} />
-            </button>
+            </Button>
           </div>
         </div>
         <PostFeed userId={Number(id)} showCreateBox={false} gridView={viewMode === "grid"} />

@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface Props {
   profile?: {
@@ -34,7 +35,9 @@ export function ProfileCompletion({ profile, verified, isAdmin }: Props) {
   return (
     <NavLink
       to="/settings"
-      className="block px-4 py-3 border-b border-dark-border hover:bg-dark-hover/50 transition-colors group"
+      className={cn(
+        "block px-4 py-3 border-b border-dark-border hover:bg-dark-hover/50 transition-colors group"
+      )}
     >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs text-zinc-500 font-medium group-hover:text-zinc-300 transition-colors">

@@ -1,20 +1,22 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, Check, X, UserCheck, Clock } from "lucide-react";
-import { connectionsService } from "../services/connections.service";
-import { IntentBadge } from "../components/shared/IntentBadge";
-import { AuroraBg } from "../components/ui/AuroraBg";
+import { connectionsService } from "@/services/connections.service";
+import { IntentBadge } from "@/components/shared/IntentBadge";
+import { AuroraBg } from "@/components/ui/AuroraBg";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
-import clsx from "clsx";
 
-type Tab = "connected" | "requests";
+import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 export function ConnectionsPage() {
-  const [tab, setTab]   = useState<Tab>("connected");
-  const navigate        = useNavigate();
-  const queryClient     = useQueryClient();
+  const navigate    = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: connData, isLoading: loadingConns } = useQuery({
     queryKey: ["connections"],
@@ -42,7 +44,7 @@ export function ConnectionsPage() {
     },
   });
 
-  const requests = reqData ?? [];
+  const requests    = reqData ?? [];
   const connections = connData ?? [];
 
   return (
@@ -61,148 +63,133 @@ export function ConnectionsPage() {
           </p>
         </div>
         {requests.length > 0 && (
-          <span className="flex items-center gap-1.5 text-xs text-brand font-medium bg-brand-muted border border-brand-border px-2.5 py-1 rounded-full">
+          <Badge variant="brand">
             <i className="fa-solid fa-bell text-[10px]" aria-hidden="true" />
             {requests.length} pending
-          </span>
+          </Badge>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-dark-surface border border-dark-border p-1 rounded-xl mb-6 mt-5 w-fit">
-        {(["connected", "requests"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={clsx(
-              "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize",
-              tab === t
-                ? "bg-brand text-white shadow-sm"
-                : "text-zinc-500 hover:text-zinc-300"
-            )}
-          >
-            {t === "requests" ? (
-              <span className="flex items-center gap-1.5">
-                Requests
-                {requests.length > 0 && (
-                  <span className="w-5 h-5 bg-brand text-white text-xs rounded-full flex items-center justify-center">
-                    {requests.length}
-                  </span>
-                )}
-              </span>
-            ) : (
-              "Connected"
-            )}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue="connected" className="mt-5">
+        <TabsList>
+          <TabsTrigger value="connected">Connected</TabsTrigger>
+          <TabsTrigger value="requests">
+            <span className="flex items-center gap-1.5">
+              Requests
+              {requests.length > 0 && (
+                <span className="w-5 h-5 bg-brand text-white text-xs rounded-full flex items-center justify-center">
+                  {requests.length}
+                </span>
+              )}
+            </span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Connected */}
-      {tab === "connected" && (
-        <div className="space-y-3">
-          {loadingConns && <Skeleton count={3} />}
-          {!loadingConns && connections.length === 0 && (
-            <Empty
-              icon={<UserCheck size={32} className="text-zinc-600" />}
-              text="No connections yet. Discover people and send a request."
-              action={{ label: "Go to Discover", onClick: () => navigate("/discover") }}
-            />
-          )}
-          {connections.map((c: any) => {
-            const other = c.attributes.other_user;
-            return (
-              <div
-                key={c.id}
-                className="card p-4 flex items-center gap-4 hover:border-dark-border/80 transition-colors"
-              >
-                <div className="w-12 h-12 rounded-full bg-brand-muted border border-brand-border flex-shrink-0 overflow-hidden">
-                  {other?.avatar_url ? (
-                    <img src={other.avatar_url} alt={other.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-brand font-semibold">
-                      {other?.name?.[0] ?? "?"}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-white">{other?.name}</p>
-                    {other?.verified && (
-                      <span className="text-emerald-400 text-xs font-medium">✓ Verified</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-zinc-500">{other?.city}</p>
-                  {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
-                </div>
-                <button
-                  onClick={() => navigate(`/chat/${c.id}`)}
-                  className="flex items-center gap-1.5 text-sm px-3 py-2 bg-brand-muted text-brand border border-brand-border rounded-xl hover:bg-brand hover:text-white transition-colors"
+        {/* Connected tab */}
+        <TabsContent value="connected">
+          <div className="space-y-3">
+            {loadingConns && <Skeleton count={3} />}
+            {!loadingConns && connections.length === 0 && (
+              <Empty
+                icon={<UserCheck size={32} className="text-zinc-600" />}
+                text="No connections yet. Discover people and send a request."
+                action={{ label: "Go to Discover", onClick: () => navigate("/discover") }}
+              />
+            )}
+            {connections.map((c: any) => {
+              const other = c.attributes.other_user;
+              return (
+                <GlassCard
+                  key={c.id}
+                  padding="sm"
+                  className="flex items-center gap-4 hover:border-white/[0.14] transition-colors"
                 >
-                  <MessageSquare size={15} />
-                  Chat
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Requests */}
-      {tab === "requests" && (
-        <div className="space-y-3">
-          {loadingReqs && <Skeleton count={2} />}
-          {!loadingReqs && requests.length === 0 && (
-            <Empty
-              icon={<Clock size={32} className="text-zinc-600" />}
-              text="No pending requests right now."
-            />
-          )}
-          {requests.map((r: any) => {
-            const other = r.attributes.other_user;
-            return (
-              <div
-                key={r.id}
-                className="card p-4 flex items-center gap-4"
-              >
-                <div className="w-12 h-12 rounded-full bg-brand-muted border border-brand-border flex-shrink-0 overflow-hidden">
-                  {other?.avatar_url ? (
-                    <img src={other.avatar_url} alt={other.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-brand font-semibold">
-                      {other?.name?.[0] ?? "?"}
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={other?.avatar_url} alt={other?.name} />
+                    <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-white">{other?.name}</p>
+                      {other?.verified && (
+                        <span className="text-emerald-400 text-xs font-medium">✓ Verified</span>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white">{other?.name}</p>
-                  <p className="text-xs text-zinc-500">
-                    {other?.city} · {formatDistanceToNow(new Date(r.attributes.created_at), { addSuffix: true })}
-                  </p>
-                  {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => accept.mutate(Number(r.id))}
-                    disabled={accept.isPending}
-                    className="w-9 h-9 flex items-center justify-center bg-emerald-900/40 text-emerald-400 border border-emerald-700/40 rounded-xl hover:bg-emerald-800/50 transition-colors"
-                    title="Accept"
+                    <p className="text-xs text-zinc-500">{other?.city}</p>
+                    {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
+                  </div>
+                  <Button
+                    variant="pink"
+                    size="sm"
+                    onClick={() => navigate(`/chat/${c.id}`)}
                   >
-                    <Check size={16} />
-                  </button>
-                  <button
-                    onClick={() => reject.mutate(Number(r.id))}
-                    disabled={reject.isPending}
-                    className="w-9 h-9 flex items-center justify-center bg-dark-hover text-zinc-400 border border-dark-border rounded-xl hover:bg-red-950/40 hover:text-red-400 transition-colors"
-                    title="Reject"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                    <MessageSquare size={15} />
+                    Chat
+                  </Button>
+                </GlassCard>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* Requests tab */}
+        <TabsContent value="requests">
+          <div className="space-y-3">
+            {loadingReqs && <Skeleton count={2} />}
+            {!loadingReqs && requests.length === 0 && (
+              <Empty
+                icon={<Clock size={32} className="text-zinc-600" />}
+                text="No pending requests right now."
+              />
+            )}
+            {requests.map((r: any) => {
+              const other = r.attributes.other_user;
+              return (
+                <GlassCard
+                  key={r.id}
+                  padding="sm"
+                  className="flex items-center gap-4"
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={other?.avatar_url} alt={other?.name} />
+                    <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-white">{other?.name}</p>
+                    <p className="text-xs text-zinc-500">
+                      {other?.city} · {formatDistanceToNow(new Date(r.attributes.created_at), { addSuffix: true })}
+                    </p>
+                    {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="glass"
+                      size="icon"
+                      onClick={() => accept.mutate(Number(r.id))}
+                      disabled={accept.isPending}
+                      title="Accept"
+                      className="h-9 w-9 text-emerald-400 hover:text-emerald-300"
+                    >
+                      <Check size={16} />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="icon"
+                      onClick={() => reject.mutate(Number(r.id))}
+                      disabled={reject.isPending}
+                      title="Reject"
+                      className="h-9 w-9 text-zinc-400 hover:text-red-400"
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                </GlassCard>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -211,13 +198,13 @@ function Skeleton({ count }: { count: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="card p-4 flex items-center gap-4 animate-pulse">
+        <GlassCard key={i} padding="sm" className="flex items-center gap-4 animate-pulse">
           <div className="w-12 h-12 rounded-full bg-dark-hover" />
           <div className="flex-1 space-y-2">
             <div className="h-4 bg-dark-hover rounded w-32" />
             <div className="h-3 bg-dark-hover rounded w-20" />
           </div>
-        </div>
+        </GlassCard>
       ))}
     </>
   );
@@ -229,9 +216,9 @@ function Empty({ icon, text, action }: { icon: React.ReactNode; text: string; ac
       {icon}
       <p className="text-sm text-zinc-500 max-w-xs">{text}</p>
       {action && (
-        <button onClick={action.onClick} className="btn-primary mt-1">
+        <Button variant="pink" onClick={action.onClick} className="mt-1">
           {action.label}
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -3,8 +3,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { authService } from "../services/auth.service";
-import { useAuthStore } from "../store/authStore";
+import { authService } from "@/services/auth.service";
+import { useAuthStore } from "@/store/authStore";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { GlassCard } from "@/components/ui/glass-card";
 import toast from "react-hot-toast";
 
 const schema = z.object({
@@ -44,41 +48,39 @@ export function LoginPage() {
           <p className="mt-1 text-sm text-zinc-500">Connect with purpose, not swipes.</p>
         </div>
 
-        <div className="card p-8">
+        <GlassCard padding="lg">
           <h2 className="text-xl font-semibold text-white mb-6">Welcome back</h2>
 
           <form onSubmit={handleSubmit((d) => login.mutate(d))} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-zinc-300">Email</label>
-              <input
+              <Label>Email</Label>
+              <Input
                 {...register("email")}
                 type="email"
                 placeholder="you@example.com"
-                className="input"
                 autoComplete="email"
               />
               {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-zinc-300">Password</label>
-              <input
+              <Label>Password</Label>
+              <Input
                 {...register("password")}
                 type="password"
                 placeholder="Your password"
-                className="input"
                 autoComplete="current-password"
               />
               {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={login.isPending}
-              className="btn-primary w-full mt-2"
+              className="w-full mt-2"
             >
               {login.isPending ? "Signing in..." : "Sign in"}
-            </button>
+            </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-zinc-500">
@@ -87,14 +89,14 @@ export function LoginPage() {
               Create one
             </Link>
           </p>
-        </div>
+        </GlassCard>
 
         {/* Dev hint */}
-        <div className="mt-4 p-3 bg-amber-950/40 border border-amber-800/40 rounded-xl text-xs text-amber-400 space-y-1">
+        <GlassCard variant="brand" padding="sm" className="mt-4 text-xs text-amber-400 space-y-1">
           <p className="font-medium">Seed accounts (password: password123)</p>
           <p>priya.sharma@seed.com · arjun.mehta@seed.com · sneha.iyer@seed.com</p>
           <p className="text-amber-500">Admin: admin@intentconnect.com / admin1234</p>
-        </div>
+        </GlassCard>
       </div>
     </div>
   );

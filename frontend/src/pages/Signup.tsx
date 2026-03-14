@@ -3,9 +3,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { authService } from "../services/auth.service";
-import { useAuthStore } from "../store/authStore";
+import { authService } from "@/services/auth.service";
+import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { GlassCard } from "@/components/ui/glass-card";
 import toast from "react-hot-toast";
 
 const signupSchema = z.object({
@@ -52,7 +56,7 @@ export function SignupPage() {
   if (step === "otp") {
     return (
       <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4">
-        <div className="card p-8 w-full max-w-md">
+        <GlassCard padding="lg" className="w-full max-w-md">
           <h1 className="text-2xl font-bold text-white">Verify your phone</h1>
           <p className="mt-1 text-sm text-zinc-500">We sent a 6-digit code to {phone}</p>
 
@@ -60,31 +64,32 @@ export function SignupPage() {
             onSubmit={otpForm.handleSubmit((d) => verifyMutation.mutate(d.otp))}
             className="mt-6 space-y-4"
           >
-            <input
+            <Input
               {...otpForm.register("otp")}
               placeholder="Enter OTP"
               maxLength={6}
-              className="w-full rounded-xl border border-dark-border bg-dark-input px-4 py-3 text-center text-xl tracking-widest text-white outline-none focus:border-brand"
+              className="text-center text-xl tracking-widest"
             />
             {otpForm.formState.errors.otp && (
               <p className="text-xs text-red-400">{otpForm.formState.errors.otp.message}</p>
             )}
-            <button
+            <Button
               type="submit"
               disabled={verifyMutation.isPending}
-              className="btn-primary w-full py-3"
+              className="w-full"
+              size="lg"
             >
               {verifyMutation.isPending ? "Verifying..." : "Verify"}
-            </button>
+            </Button>
           </form>
-        </div>
+        </GlassCard>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4">
-      <div className="card p-8 w-full max-w-md">
+      <GlassCard padding="lg" className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-white">Create your account</h1>
         <p className="mt-1 text-sm text-zinc-500">Connect with purpose, not swipes.</p>
 
@@ -94,12 +99,11 @@ export function SignupPage() {
         >
           {(["email", "phone", "password"] as const).map((field) => (
             <div key={field} className="space-y-1">
-              <label className="text-sm font-medium text-zinc-300 capitalize">{field}</label>
-              <input
+              <Label className="capitalize">{field}</Label>
+              <Input
                 {...signupForm.register(field)}
                 type={field === "password" ? "password" : "text"}
                 placeholder={field === "phone" ? "+91 9999999999" : `Your ${field}`}
-                className="input"
               />
               {signupForm.formState.errors[field] && (
                 <p className="text-xs text-red-400">
@@ -109,15 +113,16 @@ export function SignupPage() {
             </div>
           ))}
 
-          <button
+          <Button
             type="submit"
             disabled={signupMutation.isPending}
-            className="btn-primary w-full py-3"
+            className="w-full"
+            size="lg"
           >
             {signupMutation.isPending ? "Creating account..." : "Continue"}
-          </button>
+          </Button>
         </form>
-      </div>
+      </GlassCard>
     </div>
   );
 }

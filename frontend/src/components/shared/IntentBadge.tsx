@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "@/lib/utils";
 
 const INTENT_CONFIG: Record<string, { label: string; color: string }> = {
   friendship:           { label: "Friendship",           color: "bg-sky-900/50 text-sky-300 border border-sky-700/50" },
@@ -19,8 +19,8 @@ export function IntentBadge({ intent, size = "md" }: IntentBadgeProps) {
 
   return (
     <span
-      className={clsx(
-        "inline-flex items-center rounded-full font-medium",
+      className={cn(
+        "inline-flex items-center rounded-full font-medium backdrop-blur-sm",
         config.color,
         size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm"
       )}

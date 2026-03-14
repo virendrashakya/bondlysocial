@@ -5,6 +5,8 @@ import { adminService } from "../../services/admin.service";
 import { api } from "../../lib/api";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Input } from "@/components/ui/input";
 
 export function AdminUsersPage() {
   const [search, setSearch]     = useState("");
@@ -44,17 +46,17 @@ export function AdminUsersPage() {
       <div className="flex items-center gap-2 mb-5">
         <div className="relative flex-1 max-w-xs">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by email or name..."
-            className="input pl-9"
+            className="pl-9"
           />
         </div>
       </div>
 
-      <div className="card overflow-hidden">
-        <div className="px-5 py-3 border-b border-dark-border grid grid-cols-12 text-xs font-medium text-zinc-500 uppercase tracking-wide">
+      <GlassCard padding="none" className="overflow-hidden">
+        <div className="px-5 py-3 border-b border-white/[0.08] grid grid-cols-12 text-xs font-medium text-zinc-500 uppercase tracking-wide">
           <span className="col-span-4">User</span>
           <span className="col-span-2">Status</span>
           <span className="col-span-2">Verified</span>
@@ -70,7 +72,7 @@ export function AdminUsersPage() {
             </span>
           </p>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }

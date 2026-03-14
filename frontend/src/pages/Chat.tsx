@@ -1,8 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { connectionsService } from "../services/connections.service";
-import { ChatWindow } from "../components/shared/ChatWindow";
+import { connectionsService } from "@/services/connections.service";
+import { ChatWindow } from "@/components/shared/ChatWindow";
+
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export function ChatPage() {
   const { id }   = useParams<{ id: string }>();
@@ -32,9 +35,9 @@ export function ChatPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-zinc-500">
         <i className="fa-solid fa-comment-slash text-3xl text-zinc-700" aria-hidden="true" />
         <p className="text-sm">Connection not found.</p>
-        <button onClick={() => navigate("/chat")} className="btn-secondary">
+        <Button variant="secondary" onClick={() => navigate("/chat")}>
           Back to Messages
-        </button>
+        </Button>
       </div>
     );
   }
@@ -43,20 +46,19 @@ export function ChatPage() {
     <div className="flex flex-col h-full">
       {/* Mobile header */}
       <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-dark-surface border-b border-dark-border">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate("/connections")}
           aria-label="Back to connections"
-          className="text-zinc-400 hover:text-white transition-colors"
+          className="h-9 w-9 text-zinc-400 hover:text-white"
         >
           <ArrowLeft size={20} />
-        </button>
-        <div className="w-9 h-9 rounded-full bg-brand-muted border border-brand-border overflow-hidden flex-shrink-0 flex items-center justify-center text-brand font-semibold">
-          {otherUser?.avatar_url ? (
-            <img src={otherUser.avatar_url} alt={otherName} className="w-full h-full object-cover" />
-          ) : (
-            <span>{otherName[0]}</span>
-          )}
-        </div>
+        </Button>
+        <Avatar className="h-9 w-9">
+          <AvatarImage src={otherUser?.avatar_url} alt={otherName} />
+          <AvatarFallback>{otherName[0]}</AvatarFallback>
+        </Avatar>
         <div>
           <div className="flex items-center gap-1.5">
             <span className="font-semibold text-white text-sm">{otherName}</span>

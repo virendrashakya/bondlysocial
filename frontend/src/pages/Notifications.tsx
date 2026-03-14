@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCheck, UserPlus, MessageSquare, Users, Info } from "lucide-react";
-import { notificationsService } from "../services/notifications.service";
+import { notificationsService } from "@/services/notifications.service";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import clsx from "clsx";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const KIND_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
   connection_request: { icon: UserPlus,       color: "text-brand bg-brand-muted border border-brand-border" },
@@ -61,26 +63,28 @@ export function NotificationsPage() {
           )}
         </div>
         {unreadCount > 0 && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending}
-            className="flex items-center gap-1.5 text-sm text-brand hover:text-brand-light font-medium transition-colors"
+            className="text-brand hover:text-brand-light"
           >
             <CheckCheck size={15} /> Mark all read
-          </button>
+          </Button>
         )}
       </div>
 
       {isLoading && (
         <div className="space-y-3">
           {[1,2,3].map((i) => (
-            <div key={i} className="card p-4 flex gap-3 animate-pulse">
+            <GlassCard key={i} padding="sm" className="flex gap-3 animate-pulse">
               <div className="w-10 h-10 rounded-full bg-dark-hover flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="h-4 bg-dark-hover rounded w-2/3" />
                 <div className="h-3 bg-dark-hover rounded w-1/3" />
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       )}
@@ -99,21 +103,18 @@ export function NotificationsPage() {
           const unread = !n.attributes.read;
 
           return (
-            <div
+            <GlassCard
               key={n.id}
+              variant={unread ? "interactive" : "subtle"}
+              padding="sm"
               onClick={() => handleClick(n)}
-              className={clsx(
-                "flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-colors",
-                unread
-                  ? "bg-brand-muted border-brand-border hover:bg-brand/10"
-                  : "bg-dark-card border-dark-border hover:bg-dark-hover"
-              )}
+              className="flex items-start gap-3 cursor-pointer"
             >
-              <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0", cfg.color)}>
+              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0", cfg.color)}>
                 <Icon size={17} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={clsx("text-sm", unread ? "font-semibold text-white" : "text-zinc-300")}>
+                <p className={cn("text-sm", unread ? "font-semibold text-white" : "text-zinc-300")}>
                   {n.attributes.title}
                 </p>
                 {n.attributes.body && (
@@ -126,7 +127,7 @@ export function NotificationsPage() {
               {unread && (
                 <div className="w-2 h-2 rounded-full bg-brand mt-2 flex-shrink-0" />
               )}
-            </div>
+            </GlassCard>
           );
         })}
       </div>

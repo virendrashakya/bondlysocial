@@ -4,7 +4,10 @@ import { XCircle, Ban } from "lucide-react";
 import { adminService } from "../../services/admin.service";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
-import clsx from "clsx";
+import { cn } from "@/lib/utils";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const STATUS_TABS = ["open", "reviewed", "dismissed"] as const;
 
@@ -34,12 +37,12 @@ export function AdminReportsPage() {
       <p className="text-sm text-zinc-500 mb-5">Review user safety reports</p>
 
       {/* Status tabs */}
-      <div className="flex gap-1 bg-dark-surface border border-dark-border p-1 rounded-xl w-fit mb-6">
+      <div className="flex gap-1 bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] p-1 rounded-xl w-fit mb-6">
         {STATUS_TABS.map((s) => (
           <button
             key={s}
             onClick={() => setStatus(s)}
-            className={clsx(
+            className={cn(
               "px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors",
               status === s ? "bg-brand text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
             )}
@@ -52,25 +55,25 @@ export function AdminReportsPage() {
       {isLoading && (
         <div className="space-y-3">
           {[1,2,3].map((i) => (
-            <div key={i} className="card p-5 animate-pulse space-y-2">
-              <div className="h-5 bg-dark-hover rounded w-1/2" />
-              <div className="h-4 bg-dark-hover rounded w-1/3" />
-            </div>
+            <GlassCard key={i} className="animate-pulse space-y-2">
+              <div className="h-5 bg-white/[0.06] rounded w-1/2" />
+              <div className="h-4 bg-white/[0.06] rounded w-1/3" />
+            </GlassCard>
           ))}
         </div>
       )}
 
       {!isLoading && reports.length === 0 && (
-        <div className="card p-10 text-center text-zinc-500 text-sm">
+        <GlassCard className="text-center text-zinc-500 text-sm py-10">
           No {status} reports.
-        </div>
+        </GlassCard>
       )}
 
       <div className="space-y-3">
         {reports.map((r: any) => {
           const a = r.attributes;
           return (
-            <div key={r.id} className="card p-5">
+            <GlassCard key={r.id}>
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -81,12 +84,12 @@ export function AdminReportsPage() {
                     <span className="text-sm font-semibold text-white">
                       Reported #{a.reported_id}
                     </span>
-                    <span className="text-xs bg-rose-900/40 text-rose-400 border border-rose-800/40 px-2 py-0.5 rounded-full font-medium">
+                    <Badge variant="danger" size="sm">
                       {a.reason.replace("_", " ")}
-                    </span>
+                    </Badge>
                   </div>
                   {a.details && (
-                    <p className="text-sm text-zinc-400 bg-dark-hover rounded-xl px-3 py-2 mt-2 border border-dark-border">
+                    <p className="text-sm text-zinc-400 bg-white/[0.03] rounded-xl px-3 py-2 mt-2 border border-white/[0.06]">
                       "{a.details}"
                     </p>
                   )}
@@ -98,37 +101,32 @@ export function AdminReportsPage() {
                 {/* Actions */}
                 {status === "open" && (
                   <div className="flex gap-2 flex-shrink-0">
-                    <button
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => review.mutate({ id: Number(r.id), action: "reviewed" })}
                       disabled={review.isPending}
-                      title="Suspend reported user"
-                      className="flex items-center gap-1.5 px-3 py-2 bg-rose-900/40 text-rose-400 border border-rose-800/40 rounded-xl text-sm font-medium hover:bg-rose-900/60 transition-colors disabled:opacity-50"
                     >
                       <Ban size={14} /> Suspend
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => review.mutate({ id: Number(r.id), action: "dismissed" })}
                       disabled={review.isPending}
-                      title="Dismiss report"
-                      className="flex items-center gap-1.5 px-3 py-2 bg-dark-hover text-zinc-400 border border-dark-border rounded-xl text-sm font-medium hover:text-white transition-colors disabled:opacity-50"
                     >
                       <XCircle size={14} /> Dismiss
-                    </button>
+                    </Button>
                   </div>
                 )}
 
                 {status !== "open" && (
-                  <span className={clsx(
-                    "text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 border",
-                    status === "reviewed"
-                      ? "bg-rose-900/40 text-rose-400 border-rose-800/40"
-                      : "bg-dark-hover text-zinc-500 border-dark-border"
-                  )}>
+                  <Badge variant={status === "reviewed" ? "danger" : "default"} size="sm">
                     {status === "reviewed" ? "User suspended" : "Dismissed"}
-                  </span>
+                  </Badge>
                 )}
               </div>
-            </div>
+            </GlassCard>
           );
         })}
       </div>

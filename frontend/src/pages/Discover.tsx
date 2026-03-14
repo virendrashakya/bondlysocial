@@ -1,18 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { profilesService } from "../services/profiles.service";
-import { api } from "../lib/api";
-import { UserCard } from "../components/shared/UserCard";
-import { StoryStrip } from "../components/shared/StoryStrip";
-import { AuroraBg } from "../components/ui/AuroraBg";
-import { Shimmer } from "../components/ui/Shimmer";
+import { profilesService } from "@/services/profiles.service";
+import { api } from "@/lib/api";
+import { UserCard } from "@/components/shared/UserCard";
+import { StoryStrip } from "@/components/shared/StoryStrip";
+import { AuroraBg } from "@/components/ui/AuroraBg";
+import { Shimmer } from "@/components/ui/Shimmer";
+import { GlassCard } from "@/components/ui/glass-card";
 import { useNavigate } from "react-router-dom";
-import { useAppConfig } from "../hooks/useAppConfig";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import toast from "react-hot-toast";
 import { SearchX } from "lucide-react";
 
 function CardSkeleton() {
   return (
-    <div className="card overflow-hidden">
+    <GlassCard padding="none" className="overflow-hidden">
       <Shimmer className="h-52 w-full rounded-none" />
       <div className="p-3.5 space-y-2.5">
         <Shimmer className="h-3.5 w-28" />
@@ -23,7 +24,7 @@ function CardSkeleton() {
           <Shimmer className="h-8 flex-1 rounded-xl" />
         </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }
 

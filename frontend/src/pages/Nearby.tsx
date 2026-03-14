@@ -2,18 +2,22 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, RefreshCw, Locate } from "lucide-react";
-import { profilesService } from "../services/profiles.service";
-import { api } from "../lib/api";
-import { UserCard } from "../components/shared/UserCard";
-import { AuroraBg } from "../components/ui/AuroraBg";
-import { Shimmer } from "../components/ui/Shimmer";
+import { profilesService } from "@/services/profiles.service";
+import { api } from "@/lib/api";
+import { UserCard } from "@/components/shared/UserCard";
+import { AuroraBg } from "@/components/ui/AuroraBg";
+import { Shimmer } from "@/components/ui/Shimmer";
+import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import toast from "react-hot-toast";
 
 type GeoState = "idle" | "requesting" | "granted" | "denied" | "error";
 
 function CardSkeleton() {
   return (
-    <div className="card overflow-hidden">
+    <GlassCard padding="none" className="overflow-hidden">
       <Shimmer className="h-52 w-full rounded-none" />
       <div className="p-3.5 space-y-2.5">
         <Shimmer className="h-3.5 w-28" />
@@ -23,7 +27,7 @@ function CardSkeleton() {
           <Shimmer className="h-8 flex-1 rounded-xl" />
         </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }
 
@@ -107,23 +111,23 @@ export function NearbyPage() {
       </div>
 
       {/* Location controls */}
-      <div className="card p-4 mb-6 space-y-4">
+      <GlassCard padding="sm" className="mb-6 space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[180px]">
-            <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true" />
-            <input
+            <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 z-10" aria-hidden="true" />
+            <Input
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="Enter your city…"
               aria-label="City"
-              className="input pl-9"
+              className="pl-9"
             />
           </div>
-          <button
+          <Button
+            variant="outline"
             onClick={requestLocation}
             disabled={geo === "requesting"}
             aria-label={geo === "requesting" ? "Detecting location…" : "Use my location"}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm border border-dark-border text-zinc-400 hover:text-brand hover:border-brand rounded-xl transition-all disabled:opacity-50"
           >
             {geo === "requesting" ? (
               <div className="w-4 h-4 border border-brand border-t-transparent rounded-full animate-spin" />
@@ -131,41 +135,38 @@ export function NearbyPage() {
               <Locate size={15} aria-hidden="true" />
             )}
             {geo === "requesting" ? "Detecting…" : "Use location"}
-          </button>
+          </Button>
         </div>
 
         {/* Radius slider */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label htmlFor="radius-slider" className="text-xs text-zinc-500">Search radius</label>
+            <label className="text-xs text-zinc-500">Search radius</label>
             <span className="text-xs font-semibold text-white">{radius} km</span>
           </div>
-          <input
-            id="radius-slider"
-            type="range"
+          <Slider
+            value={[radius]}
+            onValueChange={([v]) => setRadius(v)}
             min={5}
             max={100}
             step={5}
-            value={radius}
-            onChange={(e) => setRadius(Number(e.target.value))}
             aria-label={`Search radius: ${radius} km`}
-            className="w-full accent-brand"
           />
           <div className="flex justify-between text-[10px] text-zinc-600">
             <span>5 km</span><span>50 km</span><span>100 km</span>
           </div>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Status messages */}
       {geo === "denied" && (
-        <div className="card p-4 mb-4 flex items-start gap-3 border-amber-800/30 bg-amber-900/10" role="alert">
+        <GlassCard variant="danger" padding="sm" className="mb-4 flex items-start gap-3" role="alert">
           <i className="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5" aria-hidden="true" />
           <div>
             <p className="text-sm font-medium text-white">Location access denied</p>
             <p className="text-xs text-zinc-500 mt-0.5">Type your city in the field above to find nearby people.</p>
           </div>
-        </div>
+        </GlassCard>
       )}
 
       {city.length < 2 && geo !== "requesting" && (
@@ -190,9 +191,9 @@ export function NearbyPage() {
       {isError && (
         <div className="flex flex-col items-center justify-center py-16 gap-3" role="alert">
           <p className="text-sm text-zinc-500">Couldn't load nearby people.</p>
-          <button onClick={() => refetch()} className="btn-secondary flex items-center gap-2">
+          <Button variant="secondary" onClick={() => refetch()}>
             <RefreshCw size={14} /> Retry
-          </button>
+          </Button>
         </div>
       )}
 

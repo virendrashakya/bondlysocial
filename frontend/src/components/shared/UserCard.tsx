@@ -1,7 +1,11 @@
 import { ShieldCheck } from "lucide-react";
 import { IntentBadge } from "./IntentBadge";
-import { Profile } from "../../services/profiles.service";
+import { Profile } from "@/services/profiles.service";
 import { formatDistanceToNow } from "date-fns";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface UserCardProps {
   profile: Profile & { match_score?: number; last_seen_at?: string };
@@ -43,8 +47,11 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
   const tier  = score !== undefined ? getMatchTier(score) : null;
 
   return (
-    <article
-      className="card overflow-hidden hover:border-white/15 hover:shadow-xl hover:shadow-brand/5 transition-all duration-300 group animate-page-enter"
+    <GlassCard
+      variant="interactive"
+      padding="none"
+      className="overflow-hidden group animate-page-enter"
+      role="article"
       aria-label={`${profile.name}, ${profile.age}. ${tier?.label ?? ""}`}
     >
       {/* Avatar */}
@@ -68,24 +75,28 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
 
         {/* AI match badge */}
         {score !== undefined && score > 0 && tier && (
-          <div
-            className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/70 backdrop-blur-md rounded-full px-2.5 py-1 border border-white/10"
+          <Badge
+            variant="glass"
+            size="sm"
+            className={cn("absolute top-2.5 left-2.5", tier.color)}
             aria-label={`${score}% match — ${tier.label}`}
           >
-            <i className={`${tier.icon} text-[9px] ${tier.color}`} aria-hidden="true" />
-            <span className={`text-xs font-bold ${tier.color}`}>{score}%</span>
-          </div>
+            <i className={cn(tier.icon, "text-[9px]")} aria-hidden="true" />
+            <span className="font-bold">{score}%</span>
+          </Badge>
         )}
 
         {/* Verified */}
         {profile.verified && (
-          <div
-            className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-2 py-1 text-xs font-medium text-emerald-400 border border-emerald-700/40"
+          <Badge
+            variant="success"
+            size="sm"
+            className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-md"
             aria-label="Verified profile"
           >
             <ShieldCheck size={11} aria-hidden="true" />
             Verified
-          </div>
+          </Badge>
         )}
 
         {/* Name + status overlaid */}
@@ -119,10 +130,10 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
                 <i className="fa-solid fa-brain text-[9px]" aria-hidden="true" />
                 IntentAI compatibility
               </span>
-              <span className={`text-[10px] font-semibold ${tier.color}`}>{tier.label}</span>
+              <span className={cn("text-[10px] font-semibold", tier.color)}>{tier.label}</span>
             </div>
             <div className="h-1 bg-dark-hover rounded-full overflow-hidden" role="progressbar" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100} aria-label={`${score}% compatibility`}>
-              <div className={`h-full ${tier.bar} rounded-full transition-all`} style={{ width: `${score}%` }} />
+              <div className={cn("h-full rounded-full transition-all", tier.bar)} style={{ width: `${score}%` }} />
             </div>
           </div>
         )}
@@ -131,12 +142,9 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
         {profile.interests?.length > 0 && (
           <div className="flex flex-wrap gap-1" aria-label="Interests">
             {profile.interests.slice(0, 3).map((interest) => (
-              <span
-                key={interest}
-                className="text-[10px] bg-dark-hover text-zinc-400 rounded-full px-2 py-0.5 border border-dark-border"
-              >
+              <Badge key={interest} variant="default" size="sm">
                 {interest}
-              </span>
+              </Badge>
             ))}
             {profile.interests.length > 3 && (
               <span className="text-[10px] text-zinc-600">+{profile.interests.length - 3} more</span>
@@ -147,21 +155,24 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
         {/* Action buttons */}
         <div className="flex gap-2 pt-0.5">
           {onView && (
-            <button
+            <Button
+              variant="glass"
+              size="sm"
               onClick={onView}
               aria-label={`View ${profile.name}'s profile`}
-              className="flex-1 text-xs py-2 rounded-xl border border-dark-border text-zinc-400 hover:bg-dark-hover hover:text-white transition-all flex items-center justify-center gap-1.5"
+              className="flex-1"
             >
               <i className="fa-regular fa-eye text-[10px]" aria-hidden="true" />
               View
-            </button>
+            </Button>
           )}
           {onConnect && (
-            <button
+            <Button
               onClick={onConnect}
               disabled={loading}
+              size="sm"
               aria-label={`Send connection request to ${profile.name}`}
-              className="flex-1 text-xs py-2 rounded-xl bg-brand text-white font-semibold hover:bg-brand-hover active:scale-[0.97] disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+              className="flex-1"
             >
               {loading ? (
                 <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
@@ -171,10 +182,10 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
                   Connect
                 </>
               )}
-            </button>
+            </Button>
           )}
         </div>
       </div>
-    </article>
+    </GlassCard>
   );
 }
