@@ -500,6 +500,7 @@ export function SettingsPage() {
                 name="height_cm"
                 control={control}
                 render={({ field }) => {
+                  const hasValue = field.value != null;
                   const val = field.value || 170;
                   const feet = Math.floor(val / 30.48);
                   const inches = Math.round((val / 2.54) % 12);
@@ -507,22 +508,33 @@ export function SettingsPage() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium text-zinc-300">Height</label>
-                        <span className="text-sm font-semibold text-brand">{val} cm <span className="text-zinc-500 font-normal">({feet}'{inches}")</span></span>
+                        {hasValue ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-brand">{val} cm <span className="text-zinc-500 font-normal">({feet}'{inches}")</span></span>
+                            <button type="button" onClick={() => field.onChange(null)} className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors">Clear</button>
+                          </div>
+                        ) : (
+                          <button type="button" onClick={() => field.onChange(170)} className="text-xs text-brand hover:text-brand-hover transition-colors">Set height</button>
+                        )}
                       </div>
-                      <input
-                        type="range"
-                        min={120}
-                        max={230}
-                        value={val}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        className="w-full accent-brand h-2 bg-dark-hover rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:shadow-lg"
-                        aria-label="Height in centimeters"
-                      />
-                      <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
-                        <span>120 cm</span>
-                        <span>175 cm</span>
-                        <span>230 cm</span>
-                      </div>
+                      {hasValue && (
+                        <>
+                          <input
+                            type="range"
+                            min={120}
+                            max={230}
+                            value={val}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            className="w-full accent-brand h-2 bg-dark-hover rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:shadow-lg"
+                            aria-label="Height in centimeters"
+                          />
+                          <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                            <span>120 cm</span>
+                            <span>175 cm</span>
+                            <span>230 cm</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
                 }}

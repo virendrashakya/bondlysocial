@@ -1,7 +1,11 @@
 import { NavLink } from "react-router-dom";
 
 interface Props {
-  profile?: { name?: string; bio?: string; avatar_url?: string; interests?: string[]; occupation?: string };
+  profile?: {
+    name?: string; bio?: string; avatar_url?: string; interests?: string[];
+    occupation?: string; cultural_background?: string; height_cm?: number;
+    languages_spoken?: string[];
+  };
   verified?: boolean;
   isAdmin?: boolean;
 }
@@ -15,6 +19,9 @@ function calc(profile?: Props["profile"], verified?: boolean): number {
     (profile.interests?.length ?? 0) >= 3,
     !!profile.occupation,
     !!verified,
+    !!profile.cultural_background,
+    !!profile.height_cm,
+    (profile.languages_spoken?.length ?? 0) >= 1,
   ];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
