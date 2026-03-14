@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { profilesService } from "@/services/profiles.service";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthStore } from "@/store/authStore";
-import type { Profile } from "@/types";
+import type { Profile, JsonApiResource, SuggestionProfile } from "@/types";
 import toast from "react-hot-toast";
 
 /** Fetch the current user's own profile. */
@@ -55,6 +55,18 @@ export function useUploadAvatar() {
       toast.success("Photo updated");
       queryClient.invalidateQueries({ queryKey: queryKeys.profiles.me() });
     },
+  });
+}
+
+/** Search profiles with filters. */
+export function useSearchProfiles(params: { q?: string; intent?: string; city?: string; interests?: string[] }) {
+  return useQuery({
+    queryKey: queryKeys.profiles.search(params),
+    queryFn: () =>
+      profilesService
+        .searchProfiles(params)
+        .then((r) => (r.data.profiles?.data ?? []) as JsonApiResource<SuggestionProfile>[]),
+    enabled: !!(params.q || params.intent || params.city),
   });
 }
 

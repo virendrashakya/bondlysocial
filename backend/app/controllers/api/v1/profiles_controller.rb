@@ -27,6 +27,34 @@ module Api
         render json: { profiles: ProfileSerializer.new(profiles, params: { current_user: current_user }).serializable_hash }
       end
 
+      # GET /profiles/search?q=&intent=&city=&interests[]=
+      def search
+        excluded_ids = current_user.blocked_user_ids + [current_user.id]
+
+        profiles = Profile
+          .joins(:user)
+          .where(users: { status: "active", phone_verified: true })
+          .where(hidden: false)
+          .where.not(user_id: excluded_ids)
+
+        if params[:q].present?
+          term = "%#{params[:q].downcase}%"
+          profiles = profiles.where("LOWER(name) LIKE ? OR LOWER(city) LIKE ? OR LOWER(occupation) LIKE ?", term, term, term)
+        end
+
+        profiles = profiles.where(intent: params[:intent]) if params[:intent].present?
+        profiles = profiles.where("LOWER(city) LIKE ?", "%#{params[:city].downcase}%") if params[:city].present?
+
+        if params[:interests].present?
+          # Match profiles that have ANY of the requested interests
+          profiles = profiles.where("interests ?| array[:interests]", interests: Array(params[:interests]))
+        end
+
+        profiles = profiles.limit(30)
+
+        render json: { profiles: ProfileSerializer.new(profiles, params: { current_user: current_user }).serializable_hash }
+      end
+
       # GET /profiles/:id
       def show
         render json: { profile: ProfileSerializer.new(@profile, params: { current_user: current_user }).serializable_hash }

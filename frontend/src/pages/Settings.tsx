@@ -7,7 +7,7 @@ import {
   DRINKING_OPTIONS, SMOKING_OPTIONS, WORKOUT_OPTIONS, RELATIONSHIP_STATUSES,
   APPEARANCE_TAGS, LANGUAGES,
 } from "@/constants";
-import { useMyProfile, useUpdateProfile, useUploadAvatar, useUploadSelfie } from "@/hooks/queries";
+import { useMyProfile, useUpdateProfile, useUploadAvatar, useUploadSelfie, usePreferences, useUpdatePrivacy, useUpdateNotificationPrefs } from "@/hooks/queries";
 import { useAuthStore } from "@/store/authStore";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { AuroraBg } from "@/components/ui/AuroraBg";
@@ -38,27 +38,30 @@ export function SettingsPage() {
     values: profileData,
   });
 
-  // Local privacy prefs (would persist to backend in production)
-  const [privacy, setPrivacy] = useState({
-    hidden:           profileData?.hidden ?? false,
-    show_online:      true,
-    show_last_seen:   true,
-    allow_messages:   true,    // anyone connected
-    show_photos_to:   "all",   // all | connections | verified
-    searchable:       true,
-    show_distance:    true,
-  });
+  const { data: prefs } = usePreferences();
+  const updatePrivacy = useUpdatePrivacy();
+  const updateNotifPrefs = useUpdateNotificationPrefs();
 
-  const [notifPrefs, setNotifPrefs] = useState({
+  const privacy = prefs?.privacy ?? {
+    hidden: profileData?.hidden ?? false,
+    show_online: true,
+    show_last_seen: true,
+    allow_messages: true,
+    show_photos_to: "all" as const,
+    searchable: true,
+    show_distance: true,
+  };
+
+  const notifPrefs = prefs?.notifications ?? {
     connection_requests: true,
-    messages:            true,
-    group_activity:      true,
-    match_alerts:        true,
-    weekly_digest:       false,
-  });
+    messages: true,
+    group_activity: true,
+    match_alerts: true,
+    weekly_digest: false,
+  };
 
-  const setP = (key: string, val: boolean) => setPrivacy((p) => ({ ...p, [key]: val }));
-  const setN = (key: string, val: boolean) => setNotifPrefs((p) => ({ ...p, [key]: val }));
+  const setP = (key: string, val: boolean | string) => updatePrivacy.mutate({ [key]: val });
+  const setN = (key: string, val: boolean) => updateNotifPrefs.mutate({ [key]: val });
 
   return (
     <div className="relative max-w-2xl mx-auto px-4 py-6">
@@ -775,7 +778,7 @@ export function SettingsPage() {
                       name="photo-visibility"
                       value={opt.value}
                       checked={privacy.show_photos_to === opt.value}
-                      onChange={() => setPrivacy((p) => ({ ...p, show_photos_to: opt.value }))}
+                      onChange={() => setP("show_photos_to", opt.value)}
                       className="accent-brand"
                     />
                     <div>
@@ -855,7 +858,7 @@ export function SettingsPage() {
 
             <GlassCard variant="subtle" padding="sm" className="flex items-start gap-2.5 text-xs text-zinc-500">
               <i className="fa-solid fa-circle-info mt-0.5 flex-shrink-0" aria-hidden="true" />
-              <p>Notification preferences are saved locally. Full push notification support requires the installed PWA.</p>
+              <p>Notification preferences are synced to your account. Full push notification support requires the installed PWA.</p>
             </GlassCard>
           </div>
         </TabsContent>

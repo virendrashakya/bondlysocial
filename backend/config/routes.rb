@@ -52,11 +52,16 @@ Rails.application.routes.draw do
       # Profile discovery
       get  "profiles/suggestions", to: "profiles#suggestions"
       get  "profiles/nearby",      to: "profiles#nearby"
+      get  "profiles/search",      to: "profiles#search"
       get  "profiles/:id",         to: "profiles#show"
       post "profiles",             to: "profiles#create"
       patch "profiles/me",         to: "profiles#update"
       post "profiles/me/avatar",   to: "profiles#upload_avatar"
       post "profiles/me/selfie",   to: "profiles#upload_selfie"
+
+      # User preferences (privacy + notifications)
+      get   "preferences",         to: "preferences#show"
+      patch "preferences",         to: "preferences#update"
 
       # Posts (photo / video feed — Instagram-style)
       resources :posts, only: [:index, :show, :create, :destroy] do
@@ -75,8 +80,13 @@ Rails.application.routes.draw do
       end
 
       # Messages (scoped to connection)
-      get  "messages/:connection_id",  to: "messages#index"
-      post "messages",                 to: "messages#create"
+      get  "messages/:connection_id",           to: "messages#index"
+      post "messages",                          to: "messages#create"
+      post "messages/:id/react",                to: "messages#react"
+      post "messages/:id/pin",                  to: "messages#pin"
+      get  "messages/:connection_id/pinned",    to: "messages#pinned"
+      post "messages/:connection_id/typing",    to: "messages#typing"
+      post "messages/:connection_id/mark_read", to: "messages#mark_read"
 
       # Groups
       resources :groups, only: [:index, :show, :create] do
@@ -90,6 +100,7 @@ Rails.application.routes.draw do
       post   "reports",      to: "safety#report"
       post   "blocks",       to: "safety#block"
       delete "blocks/:id",   to: "safety#unblock"
+      get    "blocks",       to: "safety#index"
 
       # Notifications
       resources :notifications, only: [:index] do
@@ -102,10 +113,12 @@ Rails.application.routes.draw do
         resources :reports, only: [:index] do
           member { patch :review }
         end
-        patch "users/:id/suspend",   to: "admin/reports#suspend_user"
-        patch "users/:id/unsuspend", to: "admin/reports#unsuspend_user"
-        get   "app_configs",         to: "admin/app_configs#index"
-        patch "app_configs/:key",    to: "admin/app_configs#update"
+        get   "users",                 to: "users#index"
+        patch "users/:id/suspend",     to: "users#suspend"
+        patch "users/:id/unsuspend",   to: "users#unsuspend"
+        get   "stats",                 to: "stats#index"
+        get   "app_configs",           to: "admin/app_configs#index"
+        patch "app_configs/:key",      to: "admin/app_configs#update"
       end
 
     end

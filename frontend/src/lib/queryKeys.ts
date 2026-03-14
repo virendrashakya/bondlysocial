@@ -1,12 +1,5 @@
 /**
  * Centralised query-key factory.
- *
- * Using a factory keeps keys consistent across components and makes
- * targeted invalidation trivial (e.g. `queryKeys.messages.list(id)`).
- *
- * Pattern: each domain exposes `all` (broadest) → more specific keys,
- * so `queryClient.invalidateQueries({ queryKey: queryKeys.messages.all })`
- * clears everything under that namespace.
  */
 export const queryKeys = {
   // ── Profiles ────────────────────────────────────────────────
@@ -14,6 +7,7 @@ export const queryKeys = {
     all: ["profiles"] as const,
     me: () => [...queryKeys.profiles.all, "me"] as const,
     detail: (userId: number) => [...queryKeys.profiles.all, userId] as const,
+    search: (params: Record<string, string | string[] | undefined>) => [...queryKeys.profiles.all, "search", params] as const,
   },
 
   // ── Suggestions (Discover) ─────────────────────────────────
@@ -32,6 +26,7 @@ export const queryKeys = {
     all: ["messages"] as const,
     list: (connectionId: number) => [...queryKeys.messages.all, connectionId] as const,
     preview: (connectionId: number) => [...queryKeys.messages.all, "preview", connectionId] as const,
+    pinned: (connectionId: number) => [...queryKeys.messages.all, "pinned", connectionId] as const,
   },
 
   // ── Notifications ───────────────────────────────────────────
@@ -50,6 +45,23 @@ export const queryKeys = {
   groups: {
     all: ["groups"] as const,
     detail: (id: number) => [...queryKeys.groups.all, id] as const,
+  },
+
+  // ── Safety (blocks) ────────────────────────────────────────
+  blocks: {
+    all: ["blocks"] as const,
+  },
+
+  // ── Preferences ────────────────────────────────────────────
+  preferences: {
+    all: ["preferences"] as const,
+  },
+
+  // ── Admin ─────────────────────────────────────────────────
+  admin: {
+    users: (params?: Record<string, string | number | undefined>) => ["admin", "users", params] as const,
+    stats: () => ["admin", "stats"] as const,
+    reports: (status?: string) => ["admin", "reports", status] as const,
   },
 
   // ── App Config ──────────────────────────────────────────────

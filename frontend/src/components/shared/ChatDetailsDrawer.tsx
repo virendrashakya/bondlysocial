@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, User, Calendar, Image, Video, ShieldCheck, Flag, Ban, ExternalLink } from "lucide-react";
+import { X, User, Calendar, Image, Video, ShieldCheck, Flag, Ban, ExternalLink, Pin, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
-import { useMessages } from "@/hooks/queries";
+import { useMessages, usePinnedMessages, useBlockUser, useReportUser } from "@/hooks/queries";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type { OtherUser } from "@/types";
 
 interface ChatDetailsDrawerProps {
@@ -17,6 +20,14 @@ interface ChatDetailsDrawerProps {
   onClose: () => void;
 }
 
+const REPORT_REASONS = [
+  { value: "harassment", label: "Harassment" },
+  { value: "fake_profile", label: "Fake profile" },
+  { value: "inappropriate", label: "Inappropriate content" },
+  { value: "spam", label: "Spam" },
+  { value: "other", label: "Other" },
+] as const;
+
 export function ChatDetailsDrawer({
   connectionId,
   otherUser,
@@ -25,15 +36,21 @@ export function ChatDetailsDrawer({
   onClose,
 }: ChatDetailsDrawerProps) {
   const navigate = useNavigate();
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [reportReason, setReportReason] = useState("harassment");
+  const [reportDetails, setReportDetails] = useState("");
 
   const { data: messages = [] } = useMessages(connectionId);
+  const { data: pinnedMessages = [] } = usePinnedMessages(connectionId);
+  const blockUser = useBlockUser();
+  const reportUser = useReportUser();
 
   // Extract shared media from messages
   const sharedMedia = messages
     .flatMap((msg) => {
       const items: { url: string; type: "image" | "video"; date: string }[] = [];
       const attrs = msg.attributes;
-      // From referenced posts
       if (attrs.referenced_post?.media_url) {
         items.push({
           url: attrs.referenced_post.media_url,
@@ -41,7 +58,6 @@ export function ChatDetailsDrawer({
           date: attrs.created_at,
         });
       }
-      // From image attachments
       if (attrs.image_url) {
         items.push({
           url: attrs.image_url,
@@ -54,6 +70,25 @@ export function ChatDetailsDrawer({
     .slice(0, 20);
 
   const totalMessages = messages.length;
+
+  const handleBlock = () => {
+    if (!otherUser?.id) return;
+    blockUser.mutate(otherUser.id, {
+      onSuccess: () => {
+        setShowBlockConfirm(false);
+        onClose();
+        navigate("/messages");
+      },
+    });
+  };
+
+  const handleReport = () => {
+    if (!otherUser?.id) return;
+    reportUser.mutate(
+      { reportedId: otherUser.id, reason: reportReason, details: reportDetails || undefined },
+      { onSuccess: () => { setShowReportDialog(false); setReportDetails(""); } }
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end animate-fade-in">
@@ -134,6 +169,32 @@ export function ChatDetailsDrawer({
 
           <Separator />
 
+          {/* Pinned messages */}
+          {pinnedMessages.length > 0 && (
+            <>
+              <div className="px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+                    Pinned Messages
+                  </p>
+                  <Badge variant="default" size="sm">{pinnedMessages.length}</Badge>
+                </div>
+                <div className="space-y-2">
+                  {pinnedMessages.slice(0, 5).map((msg) => (
+                    <div key={msg.id} className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                      <Pin size={12} className="text-amber-400 mt-0.5 rotate-45 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-zinc-300 line-clamp-2">{msg.attributes.body || "Shared media"}</p>
+                        <p className="text-[10px] text-zinc-600 mt-0.5">{msg.attributes.sender_name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
           {/* Shared media */}
           <div className="px-5 py-4">
             <div className="flex items-center justify-between mb-3">
@@ -200,6 +261,7 @@ export function ChatDetailsDrawer({
               variant="ghost"
               size="sm"
               className="w-full justify-start text-zinc-500 hover:text-amber-400"
+              onClick={() => setShowReportDialog(true)}
             >
               <Flag size={14} /> Report
             </Button>
@@ -207,12 +269,99 @@ export function ChatDetailsDrawer({
               variant="ghost"
               size="sm"
               className="w-full justify-start text-zinc-500 hover:text-red-400"
+              onClick={() => setShowBlockConfirm(true)}
             >
               <Ban size={14} /> Block
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Report dialog */}
+      {showReportDialog && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowReportDialog(false)} />
+          <div className="relative bg-zinc-900 border border-white/[0.08] rounded-2xl p-5 w-full max-w-sm space-y-4">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Flag size={14} className="text-amber-400" /> Report {otherUserName}
+            </h3>
+            <div className="space-y-2">
+              <p className="text-xs text-zinc-500">Select a reason:</p>
+              {REPORT_REASONS.map((r) => (
+                <label
+                  key={r.value}
+                  className={cn(
+                    "flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all text-sm",
+                    reportReason === r.value
+                      ? "border-amber-500/50 bg-amber-900/10 text-white"
+                      : "border-white/[0.08] text-zinc-400 hover:border-zinc-600"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="report-reason"
+                    value={r.value}
+                    checked={reportReason === r.value}
+                    onChange={() => setReportReason(r.value)}
+                    className="accent-amber-400"
+                  />
+                  {r.label}
+                </label>
+              ))}
+              <Textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Additional details (optional)..."
+                rows={2}
+                maxLength={500}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" className="flex-1" onClick={() => setShowReportDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="pink"
+                size="sm"
+                className="flex-1"
+                onClick={handleReport}
+                disabled={reportUser.isPending}
+              >
+                {reportUser.isPending ? "Submitting..." : "Submit Report"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block confirm dialog */}
+      {showBlockConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowBlockConfirm(false)} />
+          <div className="relative bg-zinc-900 border border-white/[0.08] rounded-2xl p-5 w-full max-w-sm space-y-4">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <AlertTriangle size={14} className="text-red-400" /> Block {otherUserName}?
+            </h3>
+            <p className="text-sm text-zinc-400">
+              This will remove your connection and prevent {otherUserName} from seeing your profile, sending messages, or appearing in your suggestions. This action can be undone from Settings.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" className="flex-1" onClick={() => setShowBlockConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex-1"
+                onClick={handleBlock}
+                disabled={blockUser.isPending}
+              >
+                {blockUser.isPending ? "Blocking..." : "Block User"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

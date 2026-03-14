@@ -26,7 +26,7 @@ export function AdminConfigPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-app-configs"],
     queryFn: () =>
-      appConfigService.adminGetAll().then((r: any) => r.data.configs.data as ConfigRow[]),
+      appConfigService.adminGetAll().then((r) => (r.data as { configs: { data: ConfigRow[] } }).configs.data),
   });
 
   const save = useMutation({

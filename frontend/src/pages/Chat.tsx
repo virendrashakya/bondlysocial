@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck, Info } from "lucide-react";
 import { useState } from "react";
 import { connectionsService } from "@/services/connections.service";
+import type { JsonApiResource, ConnectionAttributes } from "@/types";
 import { ChatWindow } from "@/components/shared/ChatWindow";
 import { ChatDetailsDrawer } from "@/components/shared/ChatDetailsDrawer";
 
@@ -21,7 +22,7 @@ export function ChatPage() {
     queryFn:  () => connectionsService.getAll().then((r) => r.data.connections?.data ?? []),
   });
 
-  const connection = (data ?? []).find((c: any) => Number(c.id) === connectionId);
+  const connection = (data ?? []).find((c: JsonApiResource<ConnectionAttributes>) => Number(c.id) === connectionId);
   const otherUser  = connection?.attributes?.other_user;
   const otherName  = otherUser?.name ?? "Chat";
   const otherUserId = otherUser?.id;

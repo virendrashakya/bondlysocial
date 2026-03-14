@@ -8,7 +8,11 @@
       "Bash(lsof -ti:5173)",
       "Bash(find /Users/virendrashakya/Development/intent-dating-mvp -type f -name *.log)",
       "Bash(find /Users/virendrashakya/Development/intent-dating-mvp/frontend/src -type f -name *router* -o -name *App.tsx -o -name *App.ts)",
-      "Bash(cat /Users/virendrashakya/Development/intent-dating-mvp/frontend/.env*)"
+      "Bash(cat /Users/virendrashakya/Development/intent-dating-mvp/frontend/.env*)",
+      "Bash(npx tsc:*)",
+      "Bash(bin/rails db:migrate)",
+      "Bash(bin/rails db:seed)",
+      "Read(//private/tmp/**)"
     ]
   }
 }

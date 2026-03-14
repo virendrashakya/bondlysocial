@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import { useConnections, useMessagePreview } from "@/hooks/queries";
+import { usePresenceStore } from "@/store/presenceStore";
 import type { JsonApiResource, ConnectionAttributes, MessageAttributes } from "@/types";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { IntentBadge } from "@/components/shared/IntentBadge";
@@ -12,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 function ConversationItem({ connection, onClick }: { connection: JsonApiResource<ConnectionAttributes>; onClick: () => void }) {
   const other = connection.attributes.other_user;
+  const isOnline = usePresenceStore((s) => other?.id ? s.isOnline(other.id) : false);
 
   const { data: msgData } = useMessagePreview(Number(connection.id));
 
@@ -38,7 +40,9 @@ function ConversationItem({ connection, onClick }: { connection: JsonApiResource
           <AvatarFallback>{other.name?.[0]}</AvatarFallback>
         </Avatar>
         {/* Online dot */}
-        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-dark-surface" />
+        {isOnline && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-dark-surface" />
+        )}
       </div>
 
       {/* Info */}

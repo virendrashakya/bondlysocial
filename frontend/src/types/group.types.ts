@@ -3,6 +3,7 @@ export interface GroupAttributes {
   title: string;
   description?: string;
   city: string;
+  category?: string;
   max_members: number;
   members_count: number;
   is_member: boolean;

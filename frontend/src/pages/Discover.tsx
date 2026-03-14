@@ -1,30 +1,16 @@
-import { UserCard } from "@/components/shared/UserCard";
-import { StoryStrip } from "@/components/shared/StoryStrip";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { Shimmer } from "@/components/ui/Shimmer";
-import { GlassCard } from "@/components/ui/glass-card";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { IntentBadge } from "@/components/shared/IntentBadge";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { useSuggestions, useConnect } from "@/hooks/queries";
 import type { JsonApiResource, SuggestionProfile } from "@/types";
-import { SearchX } from "lucide-react";
-
-function CardSkeleton() {
-  return (
-    <GlassCard padding="none" className="overflow-hidden">
-      <Shimmer className="h-52 w-full rounded-none" />
-      <div className="p-3.5 space-y-2.5">
-        <Shimmer className="h-3.5 w-28" />
-        <Shimmer className="h-3 w-full" />
-        <Shimmer className="h-3 w-3/4" />
-        <div className="flex gap-2 pt-0.5">
-          <Shimmer className="h-8 flex-1 rounded-xl" />
-          <Shimmer className="h-8 flex-1 rounded-xl" />
-        </div>
-      </div>
-    </GlassCard>
-  );
-}
+import { SearchX, X, Heart, ChevronDown, MapPin, Briefcase, ShieldCheck, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 export function DiscoverPage() {
   const navigate  = useNavigate();
@@ -33,6 +19,56 @@ export function DiscoverPage() {
   const { data, isLoading, isError } = useSuggestions(appConfig.discover_enabled);
   const connect = useConnect();
 
+  const [passed, setPassed] = useState<Set<string>>(new Set());
+  const [connected, setConnected] = useState<Set<string>>(new Set());
+  const [animating, setAnimating] = useState<"left" | "right" | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  const rawProfiles: JsonApiResource<SuggestionProfile>[] = data ?? [];
+
+  // Filter out passed/connected profiles
+  const available = rawProfiles.filter(
+    (p) => !passed.has(p.id) && !connected.has(p.id)
+  );
+
+  const currentProfile = available[0];
+  const remainingCount = available.length;
+
+  const handlePass = useCallback(() => {
+    if (!currentProfile || animating) return;
+    setAnimating("left");
+    setExpanded(false);
+    setTimeout(() => {
+      setPassed((prev) => new Set(prev).add(currentProfile.id));
+      setAnimating(null);
+    }, 300);
+  }, [currentProfile, animating]);
+
+  const handleConnect = useCallback(() => {
+    if (!currentProfile || animating) return;
+    setAnimating("right");
+    setExpanded(false);
+    connect.mutate(Number(currentProfile.id), {
+      onSuccess: () => toast.success(`Request sent to ${currentProfile.attributes.name}!`),
+      onError: () => toast.error("Could not send request"),
+    });
+    setTimeout(() => {
+      setConnected((prev) => new Set(prev).add(currentProfile.id));
+      setAnimating(null);
+    }, 300);
+  }, [currentProfile, animating, connect]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") handlePass();
+      if (e.key === "ArrowRight") handleConnect();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handlePass, handleConnect]);
+
+  // ─── Disabled state ────────────────────────────────────────────────────
   if (!appConfig.discover_enabled) {
     return (
       <div className="relative flex flex-col items-center justify-center py-32 text-center px-4">
@@ -46,35 +82,23 @@ export function DiscoverPage() {
     );
   }
 
-  // Derive story strip profiles — those seen recently
-  const rawProfiles: JsonApiResource<SuggestionProfile>[] = data ?? [];
-  const onlineProfiles = rawProfiles
-    .filter((p: JsonApiResource<SuggestionProfile>) => {
-      const lastSeen = p.attributes.last_seen_at;
-      return lastSeen && (Date.now() - new Date(lastSeen).getTime()) < 5 * 60 * 1000;
-    })
-    .slice(0, 12)
-    .map((p: JsonApiResource<SuggestionProfile>) => ({
-      id: Number(p.id),
-      name: p.attributes.name ?? "User",
-      avatar_url: p.attributes.avatar_url,
-      intent: p.attributes.intent,
-      online: true,
-    }));
-
+  // ─── Loading ───────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="relative max-w-5xl mx-auto px-4 py-6">
+      <div className="relative flex flex-col items-center justify-center min-h-[80vh] px-4">
         <AuroraBg />
-        <Shimmer className="h-5 w-36 mb-1" />
-        <Shimmer className="h-3.5 w-64 mb-6 mt-2" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+        <div className="w-full max-w-sm">
+          <Shimmer className="h-[70vh] w-full rounded-3xl" />
+          <div className="flex justify-center gap-6 mt-6">
+            <Shimmer className="h-14 w-14 rounded-full" />
+            <Shimmer className="h-14 w-14 rounded-full" />
+          </div>
         </div>
       </div>
     );
   }
 
+  // ─── Error ─────────────────────────────────────────────────────────────
   if (isError) {
     return (
       <div className="relative flex flex-col items-center justify-center py-24 text-zinc-500">
@@ -84,54 +108,233 @@ export function DiscoverPage() {
     );
   }
 
-  if (rawProfiles.length === 0) {
+  // ─── No more profiles ─────────────────────────────────────────────────
+  if (!currentProfile) {
     return (
-      <div className="relative flex flex-col items-center justify-center py-24 text-center px-4">
+      <div className="relative flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
         <AuroraBg />
-        <p className="text-2xl font-bold text-white">No new matches today</p>
-        <p className="mt-2 text-sm text-zinc-500 max-w-sm">
-          We'll surface more people matching your intent tomorrow.
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center mb-4">
+          <Sparkles size={32} className="text-brand" />
+        </div>
+        <p className="text-2xl font-bold text-white">You're all caught up!</p>
+        <p className="mt-2 text-sm text-zinc-500 max-w-xs">
+          No more profiles for now. We'll surface more people matching your intent tomorrow.
         </p>
+        <Button
+          variant="secondary"
+          className="mt-6"
+          onClick={() => {
+            setPassed(new Set());
+            setConnected(new Set());
+          }}
+        >
+          Start over
+        </Button>
       </div>
     );
   }
 
+  const p = currentProfile.attributes;
+  const score = p.match_score;
+
   return (
-    <div className="relative max-w-5xl mx-auto px-4 py-6">
+    <div className="relative flex flex-col items-center min-h-[calc(100vh-4rem)] px-4 py-4">
       <AuroraBg />
 
-      {/* Online now strip */}
-      {onlineProfiles.length > 0 && (
-        <div className="mb-6">
-          <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider mb-3">
-            Online now · {onlineProfiles.length}
-          </p>
-          <StoryStrip
-            profiles={onlineProfiles}
-            onSelect={(id) => navigate(`/profile/${id}`)}
-          />
+      {/* Counter */}
+      <div className="w-full max-w-sm flex items-center justify-between mb-3">
+        <h1 className="text-lg font-bold text-white">Discover</h1>
+        <span className="text-xs text-zinc-500">{remainingCount} left today</span>
+      </div>
+
+      {/* Card */}
+      <div
+        className={cn(
+          "relative w-full max-w-sm rounded-3xl overflow-hidden transition-all duration-300 shadow-2xl shadow-black/40",
+          animating === "left" && "translate-x-[-120%] rotate-[-8deg] opacity-0",
+          animating === "right" && "translate-x-[120%] rotate-[8deg] opacity-0",
+          !animating && "translate-x-0 rotate-0 opacity-100"
+        )}
+      >
+        {/* Full-screen photo */}
+        <div className={cn("relative", expanded ? "h-[55vh]" : "h-[68vh]")}>
+          {p.avatar_url ? (
+            <img
+              src={p.avatar_url}
+              alt={p.name}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-muted to-dark-hover">
+              <span className="text-8xl font-black text-brand/20">{p.name?.[0]?.toUpperCase()}</span>
+            </div>
+          )}
+
+          {/* Gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+
+          {/* Top badges */}
+          <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
+            {score !== undefined && score > 0 && (
+              <Badge variant="glass" size="sm" className="text-brand font-bold">
+                <Sparkles size={11} />
+                {score}% match
+              </Badge>
+            )}
+            {p.verified && (
+              <Badge variant="glass" size="sm" className="text-emerald-400 ml-auto">
+                <ShieldCheck size={11} />
+                Verified
+              </Badge>
+            )}
+          </div>
+
+          {/* Bottom info overlay */}
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-white drop-shadow-lg">
+                  {p.name}{p.age ? `, ${p.age}` : ""}
+                </h2>
+                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                  {p.city && (
+                    <span className="flex items-center gap-1 text-sm text-white/80">
+                      <MapPin size={13} />
+                      {p.city}
+                    </span>
+                  )}
+                  {p.occupation && (
+                    <span className="flex items-center gap-1 text-sm text-white/60">
+                      <Briefcase size={13} />
+                      {p.occupation}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <IntentBadge intent={p.intent} />
+            </div>
+
+            {/* Expand trigger */}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="mt-3 flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors"
+            >
+              <ChevronDown
+                size={14}
+                className={cn("transition-transform", expanded && "rotate-180")}
+              />
+              {expanded ? "Show less" : `More about ${p.name?.split(" ")[0]}`}
+            </button>
+          </div>
         </div>
-      )}
 
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-xl font-bold text-white">Today's matches</h1>
-        <span className="text-xs text-zinc-600">{rawProfiles.length} found</span>
+        {/* Expanded details */}
+        {expanded && (
+          <div className="bg-[rgba(12,12,12,0.98)] px-5 py-5 space-y-4 animate-fade-in">
+            {/* Bio */}
+            {p.bio && (
+              <p className="text-sm text-zinc-300 leading-relaxed">{p.bio}</p>
+            )}
+
+            {/* Interests */}
+            {p.interests && p.interests.length > 0 && (
+              <div>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-2">Interests</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {p.interests.map((interest: string) => (
+                    <Badge key={interest} variant="default" size="sm">
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Details grid */}
+            {(p.height_cm || p.body_type || p.drinking || p.workout_frequency) && (
+              <div>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-2">About</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {p.height_cm && (
+                    <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                      <span className="text-[10px] text-zinc-600 block">Height</span>
+                      <span className="text-xs text-zinc-300">{p.height_cm} cm</span>
+                    </div>
+                  )}
+                  {p.body_type && (
+                    <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                      <span className="text-[10px] text-zinc-600 block">Build</span>
+                      <span className="text-xs text-zinc-300 capitalize">{p.body_type}</span>
+                    </div>
+                  )}
+                  {p.drinking && (
+                    <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                      <span className="text-[10px] text-zinc-600 block">Drinks</span>
+                      <span className="text-xs text-zinc-300 capitalize">{p.drinking}</span>
+                    </div>
+                  )}
+                  {p.workout_frequency && (
+                    <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                      <span className="text-[10px] text-zinc-600 block">Workout</span>
+                      <span className="text-xs text-zinc-300 capitalize">{p.workout_frequency}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* View full profile link */}
+            <Button
+              variant="glass"
+              size="sm"
+              className="w-full"
+              onClick={() => navigate(`/profile/${currentProfile.id}`)}
+            >
+              View full profile
+            </Button>
+          </div>
+        )}
       </div>
-      <p className="text-sm text-zinc-500 mb-5">
-        Compatible intent, nearby. Refreshes daily.
+
+      {/* Action buttons */}
+      <div className="flex items-center justify-center gap-8 mt-6">
+        {/* Pass */}
+        <button
+          onClick={handlePass}
+          disabled={!!animating}
+          className={cn(
+            "w-14 h-14 rounded-full border-2 border-zinc-700 flex items-center justify-center",
+            "text-zinc-400 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10",
+            "transition-all active:scale-90",
+            animating && "opacity-50 pointer-events-none"
+          )}
+          aria-label="Pass"
+        >
+          <X size={24} strokeWidth={2.5} />
+        </button>
+
+        {/* Connect */}
+        <button
+          onClick={handleConnect}
+          disabled={!!animating}
+          className={cn(
+            "w-16 h-16 rounded-full bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center",
+            "text-white shadow-lg shadow-brand/30",
+            "hover:shadow-brand/50 hover:scale-105",
+            "transition-all active:scale-90",
+            animating && "opacity-50 pointer-events-none"
+          )}
+          aria-label="Connect"
+        >
+          <Heart size={26} strokeWidth={2.5} fill="currentColor" />
+        </button>
+      </div>
+
+      {/* Keyboard hint */}
+      <p className="text-[10px] text-zinc-700 mt-3 hidden md:block">
+        ← pass · → connect
       </p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {rawProfiles.map((p: JsonApiResource<SuggestionProfile>) => (
-          <UserCard
-            key={p.id}
-            profile={{ ...p.attributes, id: Number(p.id) }}
-            onView={() => navigate(`/profile/${p.id}`)}
-            onConnect={() => connect.mutate(Number(p.id))}
-            loading={connect.isPending}
-          />
-        ))}
-      </div>
     </div>
   );
 }

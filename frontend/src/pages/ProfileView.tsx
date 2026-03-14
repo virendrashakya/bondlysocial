@@ -32,7 +32,7 @@ export function ProfileViewPage() {
       toast.success("Connection request sent!");
       queryClient.invalidateQueries({ queryKey: ["suggestions"] });
     },
-    onError: (err: any) => {
+    onError: (err: Error & { response?: { data?: { errors?: string[] } } }) => {
       toast.error(err.response?.data?.errors?.[0] ?? "Could not send request");
     },
   });

@@ -18,6 +18,31 @@ class User < ApplicationRecord
   has_many :blocks_as_blocked,    class_name: "Block", foreign_key: :blocked_id, dependent: :destroy
   has_many :filed_reports,        class_name: "Report", foreign_key: :reporter_id, dependent: :destroy
   has_many :received_reports,     class_name: "Report", foreign_key: :reported_id, dependent: :destroy
+  has_many :message_reactions,    dependent: :destroy
+
+  DEFAULT_PRIVACY = {
+    "searchable" => true,
+    "show_distance" => true,
+    "show_last_seen" => true,
+    "allow_messages" => true,
+    "show_photos_to" => "all"
+  }.freeze
+
+  DEFAULT_NOTIFICATION_PREFS = {
+    "connection_requests" => true,
+    "messages" => true,
+    "group_activity" => true,
+    "match_alerts" => true,
+    "weekly_digest" => false
+  }.freeze
+
+  def effective_privacy
+    DEFAULT_PRIVACY.merge(privacy_settings || {})
+  end
+
+  def effective_notification_prefs
+    DEFAULT_NOTIFICATION_PREFS.merge(notification_preferences || {})
+  end
 
   validates :email, presence: true, uniqueness: { case_sensitive: false },
                     format: { with: URI::MailTo::EMAIL_REGEXP }

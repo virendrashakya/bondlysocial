@@ -33,7 +33,7 @@ export function LoginPage() {
       const hasProfile = !!user.data.attributes.profile;
       navigate(hasProfile ? "/discover" : "/onboarding");
     },
-    onError: (err: any) => {
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
       const msg = err.response?.data?.error || "Login failed";
       toast.error(msg);
     },

@@ -14,4 +14,12 @@ class ConversationChannel < ApplicationCable::Channel
   def unsubscribed
     stop_all_streams
   end
+
+  # Client can call this directly via ActionCable perform
+  def typing
+    ActionCable.server.broadcast(
+      "conversation_#{params[:connection_id]}",
+      { type: "typing", user_id: current_user.id, user_name: current_user.profile&.name }
+    )
+  end
 end

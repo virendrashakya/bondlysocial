@@ -9,6 +9,18 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import type { JsonApiResource } from "@/types";
+
+interface ReportAttributes {
+  reporter_id: number;
+  reported_id: number;
+  reporter_name?: string;
+  reported_name?: string;
+  reason: string;
+  details?: string;
+  status: string;
+  created_at: string;
+}
 
 const STATUS_TABS = ["open", "reviewed", "dismissed"] as const;
 
@@ -30,7 +42,7 @@ export function AdminReportsPage() {
     },
   });
 
-  const reports: any[] = data ?? [];
+  const reports: JsonApiResource<ReportAttributes>[] = data ?? [];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
@@ -66,7 +78,7 @@ export function AdminReportsPage() {
       )}
 
       <div className="space-y-3">
-        {reports.map((r: any) => {
+        {reports.map((r: JsonApiResource<ReportAttributes>) => {
           const a = r.attributes;
           return (
             <GlassCard key={r.id}>

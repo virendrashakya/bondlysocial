@@ -71,8 +71,11 @@ class Profile < ApplicationRecord
   end
 
   def avatar_url
-    return nil unless avatar.attached?
-    Rails.application.routes.url_helpers.rails_blob_url(avatar, expires_in: 1.hour)
+    if avatar.attached?
+      Rails.application.routes.url_helpers.rails_blob_url(avatar, expires_in: 1.hour)
+    else
+      remote_avatar_url
+    end
   end
 
   def selfie_url

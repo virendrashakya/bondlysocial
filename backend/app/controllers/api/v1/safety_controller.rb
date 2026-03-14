@@ -1,6 +1,22 @@
 module Api
   module V1
     class SafetyController < BaseController
+      # GET /blocks
+      def index
+        blocks = current_user.blocks_as_blocker.includes(blocked: :profile).order(created_at: :desc)
+        render json: {
+          blocks: blocks.map { |b|
+            {
+              id: b.id,
+              blocked_id: b.blocked_id,
+              blocked_name: b.blocked.profile&.name || b.blocked.email,
+              blocked_avatar_url: b.blocked.profile&.avatar_url,
+              created_at: b.created_at.iso8601
+            }
+          }
+        }
+      end
+
       # POST /reports
       def report
         reported_user = User.active.find(params[:reported_id])

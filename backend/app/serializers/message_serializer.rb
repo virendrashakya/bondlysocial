@@ -42,4 +42,16 @@ class MessageSerializer
       "text"
     end
   end
+
+  attribute :pinned do |message|
+    message.pinned?
+  end
+
+  attribute :pinned_at do |message|
+    message.pinned_at&.iso8601
+  end
+
+  attribute :reactions do |message|
+    message.reactions.map { |r| { id: r.id, emoji: r.emoji, user_id: r.user_id, user_name: r.user.profile&.name } }
+  end
 end

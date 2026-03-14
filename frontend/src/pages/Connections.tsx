@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, Check, X, UserCheck, Clock } from "lucide-react";
 import { useConnections, useConnectionRequests, useAcceptConnection, useRejectConnection } from "@/hooks/queries";
+import { usePresenceStore } from "@/store/presenceStore";
 import type { JsonApiResource, ConnectionAttributes } from "@/types";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { AuroraBg } from "@/components/ui/AuroraBg";
@@ -74,39 +75,9 @@ export function ConnectionsPage() {
                 action={{ label: "Go to Discover", onClick: () => navigate("/discover") }}
               />
             )}
-            {connections.map((c: JsonApiResource<ConnectionAttributes>) => {
-              const other = c.attributes.other_user;
-              return (
-                <GlassCard
-                  key={c.id}
-                  padding="sm"
-                  className="flex items-center gap-4 hover:border-white/[0.14] transition-colors"
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={other?.avatar_url} alt={other?.name} />
-                    <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-white">{other?.name}</p>
-                      {other?.verified && (
-                        <span className="text-emerald-400 text-xs font-medium">✓ Verified</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-zinc-500">{other?.city}</p>
-                    {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
-                  </div>
-                  <Button
-                    variant="pink"
-                    size="sm"
-                    onClick={() => navigate(`/chat/${c.id}`)}
-                  >
-                    <MessageSquare size={15} />
-                    Chat
-                  </Button>
-                </GlassCard>
-              );
-            })}
+            {connections.map((c: JsonApiResource<ConnectionAttributes>) => (
+              <ConnectionCard key={c.id} connection={c} onChat={() => navigate(`/chat/${c.id}`)} />
+            ))}
           </div>
         </TabsContent>
 
@@ -168,6 +139,46 @@ export function ConnectionsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ConnectionCard({ connection, onChat }: { connection: JsonApiResource<ConnectionAttributes>; onChat: () => void }) {
+  const other = connection.attributes.other_user;
+  const isOnline = usePresenceStore((s) => other?.id ? s.isOnline(other.id) : false);
+
+  return (
+    <GlassCard
+      padding="sm"
+      className="flex items-center gap-4 hover:border-white/[0.14] transition-colors"
+    >
+      <div className="relative flex-shrink-0">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={other?.avatar_url} alt={other?.name} />
+          <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
+        </Avatar>
+        {isOnline && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-dark-surface" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-white">{other?.name}</p>
+          {other?.verified && (
+            <span className="text-emerald-400 text-xs font-medium">✓ Verified</span>
+          )}
+        </div>
+        <p className="text-xs text-zinc-500">{other?.city}</p>
+        {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
+      </div>
+      <Button
+        variant="pink"
+        size="sm"
+        onClick={onChat}
+      >
+        <MessageSquare size={15} />
+        Chat
+      </Button>
+    </GlassCard>
   );
 }
 

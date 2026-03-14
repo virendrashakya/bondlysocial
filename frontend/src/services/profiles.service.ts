@@ -25,6 +25,9 @@ export const profilesService = {
     });
   },
 
+  searchProfiles: (params: { q?: string; intent?: string; city?: string; interests?: string[] }) =>
+    api.get("/profiles/search", { params }),
+
   uploadSelfie: (file: File) => {
     const form = new FormData();
     form.append("selfie", file);

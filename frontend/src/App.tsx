@@ -25,6 +25,7 @@ import { MessagesPage }      from "./pages/Messages";
 import { GroupsPage }         from "./pages/Groups";
 import { NotificationsPage }  from "./pages/Notifications";
 import { SettingsPage }       from "./pages/Settings";
+import { BlockedUsersPage }  from "./pages/BlockedUsers";
 import { NearbyPage }         from "./pages/Nearby";
 import { FeedPage }          from "./pages/Feed";
 import { UserPostsPage }     from "./pages/UserPosts";
@@ -106,6 +107,7 @@ function AppRoutes() {
         <Route path="/groups"        element={<RequireAuth><AppLayout><GroupsPage /></AppLayout></RequireAuth>} />
         <Route path="/notifications" element={<RequireAuth><AppLayout><NotificationsPage /></AppLayout></RequireAuth>} />
         <Route path="/settings"      element={<RequireAuth><AppLayout><SettingsPage /></AppLayout></RequireAuth>} />
+        <Route path="/blocked-users" element={<RequireAuth><AppLayout><BlockedUsersPage /></AppLayout></RequireAuth>} />
 
         {/* ── Admin ── */}
         <Route path="/admin"         element={<RequireAdmin><AdminLayout><AdminOverviewPage /></AdminLayout></RequireAdmin>} />

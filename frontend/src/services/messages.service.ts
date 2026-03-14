@@ -20,4 +20,19 @@ export const messagesService = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  react: (messageId: number, emoji: string) =>
+    api.post(`/messages/${messageId}/react`, { emoji }),
+
+  pin: (messageId: number) =>
+    api.post(`/messages/${messageId}/pin`),
+
+  getPinned: (connectionId: number) =>
+    api.get(`/messages/${connectionId}/pinned`),
+
+  sendTyping: (connectionId: number) =>
+    api.post(`/messages/${connectionId}/typing`),
+
+  markRead: (connectionId: number) =>
+    api.post(`/messages/${connectionId}/mark_read`),
 };

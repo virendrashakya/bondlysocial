@@ -26,6 +26,17 @@ export function useMessagePreview(connectionId: number) {
   });
 }
 
+/** Fetch pinned messages for a connection. */
+export function usePinnedMessages(connectionId: number) {
+  return useQuery({
+    queryKey: queryKeys.messages.pinned(connectionId),
+    queryFn: () =>
+      messagesService
+        .getPinned(connectionId)
+        .then((r) => (r.data.messages?.data ?? []) as JsonApiResource<MessageAttributes>[]),
+  });
+}
+
 /** Mutation: send a text message. */
 export function useSendMessage(connectionId: number) {
   const queryClient = useQueryClient();
@@ -48,5 +59,45 @@ export function useSendImage(connectionId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
     },
+  });
+}
+
+/** Mutation: toggle reaction on a message. */
+export function useReactToMessage(connectionId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ messageId, emoji }: { messageId: number; emoji: string }) =>
+      messagesService.react(messageId, emoji),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
+    },
+  });
+}
+
+/** Mutation: toggle pin on a message. */
+export function usePinMessage(connectionId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (messageId: number) => messagesService.pin(messageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages.pinned(connectionId) });
+    },
+  });
+}
+
+/** Mutation: send typing indicator. */
+export function useSendTyping(connectionId: number) {
+  return useMutation({
+    mutationFn: () => messagesService.sendTyping(connectionId),
+  });
+}
+
+/** Mutation: mark messages as read. */
+export function useMarkRead(connectionId: number) {
+  return useMutation({
+    mutationFn: () => messagesService.markRead(connectionId),
   });
 }

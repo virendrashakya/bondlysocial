@@ -4,8 +4,10 @@ import { Bell, LogOut, ShieldCheck, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
+import { usePresenceStore } from "@/store/presenceStore";
 import { api } from "@/lib/api";
 import { authService } from "@/services/auth.service";
+import { usePresenceChannel } from "@/hooks/useActionCable";
 import { AnnouncementBanner } from "@/components/shared/AnnouncementBanner";
 import { ProfileCompletion } from "@/components/shared/ProfileCompletion";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -32,6 +34,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate          = useNavigate();
   const location          = useLocation();
   const appConfig         = useAppConfig();
+  const { setOnline, setOffline, updateLastActive } = usePresenceStore();
+
+  // Subscribe to presence channel for online status
+  usePresenceChannel((data) => {
+    if (data.status === "online") {
+      setOnline(data.user_id);
+    } else {
+      setOffline(data.user_id);
+    }
+    if (data.last_active_at) {
+      updateLastActive(data.user_id, data.last_active_at);
+    }
+  });
 
   const { data: notifData } = useQuery({
     queryKey: ["notifications-count"],

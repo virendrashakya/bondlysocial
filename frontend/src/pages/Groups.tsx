@@ -4,7 +4,9 @@ import { Plus, MapPin, X, Users, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import type { AxiosError } from "axios";
 import { groupsService } from "@/services/groups.service";
+import type { JsonApiResource, GroupAttributes } from "@/types";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { Shimmer } from "@/components/ui/Shimmer";
 import { Button } from "@/components/ui/button";
@@ -75,7 +77,7 @@ export function GroupsPage() {
       toast.success("Joined group!");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
-    onError: (err: any) => toast.error(err.response?.data?.error ?? "Could not join"),
+    onError: (err: AxiosError<{ error?: string }>) => toast.error(err.response?.data?.error ?? "Could not join"),
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateForm>({
@@ -91,10 +93,10 @@ export function GroupsPage() {
       setShowCreate(false);
       reset();
     },
-    onError: (err: any) => toast.error(err.response?.data?.errors?.[0] ?? "Failed to create"),
+    onError: (err: AxiosError<{ errors?: string[] }>) => toast.error(err.response?.data?.errors?.[0] ?? "Failed to create"),
   });
 
-  const groups = (data ?? []).filter((g: any) => !category || g.attributes.category === category);
+  const groups = (data ?? []).filter((g: JsonApiResource<GroupAttributes>) => !category || g.attributes.category === category);
 
   return (
     <div className="relative max-w-3xl mx-auto px-4 py-6">
@@ -172,10 +174,10 @@ export function GroupsPage() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {groups.map((g: any) => {
+        {groups.map((g: JsonApiResource<GroupAttributes>) => {
           const a = g.attributes;
           const catDef   = CATEGORIES.find((c) => c.value === a.category);
-          const badgeVar = CATEGORY_BADGE_VARIANT[a.category] ?? "default";
+          const badgeVar = (a.category ? CATEGORY_BADGE_VARIANT[a.category] : undefined) ?? "default";
           const fill  = Math.min(100, Math.round(((a.members_count ?? 0) / (a.max_members ?? 20)) * 100));
 
           return (

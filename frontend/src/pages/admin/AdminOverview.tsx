@@ -4,6 +4,15 @@ import { adminService } from "../../services/admin.service";
 import { api } from "../../lib/api";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
+import type { JsonApiResource } from "@/types";
+
+interface ReportAttributes {
+  reporter_id: number;
+  reported_id: number;
+  reporter_name?: string;
+  reported_name?: string;
+  reason: string;
+}
 
 function StatCard({ icon: Icon, label, value, color }: {
   icon: React.ElementType; label: string; value: number | string; color: string;
@@ -32,6 +41,11 @@ export function AdminOverviewPage() {
     queryFn:  () => api.get("/notifications").then((r) => r.data),
   });
 
+  const { data: stats } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn:  () => adminService.getStats().then((r) => r.data),
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="mb-6">
@@ -41,9 +55,9 @@ export function AdminOverviewPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={Flag}      label="Open reports"    value={reports?.length ?? 0} color="text-rose-400 bg-rose-900/30 border border-rose-800/30" />
-        <StatCard icon={UserCheck} label="Pending reviews"  value="—"                   color="text-amber-400 bg-amber-900/30 border border-amber-800/30" />
-        <StatCard icon={Users}     label="Active users"     value="—"                   color="text-brand bg-brand-muted border border-brand-border" />
-        <StatCard icon={Layers}    label="Groups"           value="—"                   color="text-violet-400 bg-violet-900/30 border border-violet-800/30" />
+        <StatCard icon={UserCheck} label="Pending reviews"  value={stats?.pending_reviews ?? 0} color="text-amber-400 bg-amber-900/30 border border-amber-800/30" />
+        <StatCard icon={Users}     label="Active users"     value={stats?.active_users ?? 0}   color="text-brand bg-brand-muted border border-brand-border" />
+        <StatCard icon={Layers}    label="Groups"           value={stats?.total_groups ?? 0}    color="text-violet-400 bg-violet-900/30 border border-violet-800/30" />
       </div>
 
       {/* Recent open reports preview */}
@@ -58,7 +72,7 @@ export function AdminOverviewPage() {
               No open reports. Platform is clean.
             </div>
           )}
-          {(reports ?? []).slice(0, 5).map((r: any) => (
+          {(reports ?? []).slice(0, 5).map((r: JsonApiResource<ReportAttributes>) => (
             <div key={r.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
               <div>
                 <span className="text-sm font-medium text-white">

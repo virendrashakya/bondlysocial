@@ -2,8 +2,10 @@ class Message < ApplicationRecord
   belongs_to :connection
   belongs_to :sender, class_name: "User"
   belongs_to :referenced_post, class_name: "Post", optional: true
+  belongs_to :pinned_by, class_name: "User", optional: true
 
   has_one_attached :image
+  has_many :reactions, class_name: "MessageReaction", dependent: :destroy
 
   validates :body, length: { maximum: 2000 }
   validate  :image_format_and_size, if: :image_attached?

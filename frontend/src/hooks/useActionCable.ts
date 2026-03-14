@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 // @ts-ignore -- no type declarations for @rails/actioncable
 import { createConsumer } from "@rails/actioncable";
 import { useAuthStore } from "../store/authStore";
@@ -18,8 +18,10 @@ function getCable() {
 
 export function useConversationChannel(
   connectionId: number | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onMessage: (data: any) => void
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subscriptionRef = useRef<any>(null);
 
   useEffect(() => {
@@ -35,8 +37,16 @@ export function useConversationChannel(
       subscriptionRef.current?.unsubscribe();
     };
   }, [connectionId]);
+
+  /** Send typing indicator through ActionCable directly. */
+  const sendTyping = useCallback(() => {
+    subscriptionRef.current?.perform("typing");
+  }, []);
+
+  return { sendTyping };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useNotificationsChannel(onNotification: (data: any) => void) {
   useEffect(() => {
     const consumer = getCable();
@@ -45,5 +55,37 @@ export function useNotificationsChannel(onNotification: (data: any) => void) {
       { received: onNotification }
     );
     return () => sub.unsubscribe();
+  }, []);
+}
+
+export interface PresenceUpdate {
+  type: "presence";
+  user_id: number;
+  status: "online" | "offline";
+  last_active_at: string | null;
+}
+
+/** Subscribe to the presence channel for online status. */
+export function usePresenceChannel(onPresence: (data: PresenceUpdate) => void) {
+  useEffect(() => {
+    const consumer = getCable();
+    const sub = consumer.subscriptions.create(
+      { channel: "PresenceChannel" },
+      {
+        received: onPresence,
+        connected: () => {
+          // Send heartbeat every 30s
+          const interval = setInterval(() => sub.perform("heartbeat"), 30_000);
+          sub._heartbeatInterval = interval;
+        },
+        disconnected: () => {
+          clearInterval(sub._heartbeatInterval);
+        },
+      }
+    );
+    return () => {
+      clearInterval(sub._heartbeatInterval);
+      sub.unsubscribe();
+    };
   }, []);
 }

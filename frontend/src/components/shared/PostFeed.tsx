@@ -10,7 +10,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import type { Post, MediaItem } from "@/types";
+import type { Post, MediaItem, JsonApiResource, ConnectionAttributes } from "@/types";
 
 // --- Instagram-style Carousel ---
 function MediaCarousel({ media }: { media: MediaItem[] }) {
@@ -610,8 +610,8 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
     }
   };
 
-  const conns = (connections ?? []).filter((c: any) => {
-    const name = c.attributes?.other_user?.name || c.other_user?.name || "";
+  const conns = (connections ?? []).filter((c: JsonApiResource<ConnectionAttributes>) => {
+    const name = c.attributes?.other_user?.name || "";
     return name.toLowerCase().includes(search.toLowerCase());
   });
 
@@ -650,9 +650,9 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
           {conns.length === 0 && (
             <p className="text-center text-sm text-zinc-600 py-6">No connections found</p>
           )}
-          {conns.map((conn: any) => {
-            const other = conn.attributes?.other_user || conn.other_user;
-            const connId = conn.id;
+          {conns.map((conn: JsonApiResource<ConnectionAttributes>) => {
+            const other = conn.attributes?.other_user;
+            const connId = Number(conn.id);
             return (
               <button
                 key={connId}

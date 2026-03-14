@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_15_200000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_16_200001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -94,9 +94,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_15_200000) do
     t.string "status", default: "active", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "category"
     t.index ["city"], name: "index_groups_on_city"
     t.index ["creator_id"], name: "index_groups_on_creator_id"
     t.index ["status"], name: "index_groups_on_status"
+  end
+
+  create_table "message_reactions", force: :cascade do |t|
+    t.bigint "message_id", null: false
+    t.bigint "user_id", null: false
+    t.string "emoji", limit: 10, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "user_id", "emoji"], name: "idx_unique_reaction", unique: true
+    t.index ["message_id"], name: "index_message_reactions_on_message_id"
+    t.index ["user_id"], name: "index_message_reactions_on_user_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -107,7 +119,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_15_200000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "referenced_post_id"
+    t.boolean "pinned", default: false, null: false
+    t.datetime "pinned_at"
+    t.bigint "pinned_by_id"
     t.index ["connection_id", "created_at"], name: "index_messages_on_connection_id_and_created_at"
+    t.index ["connection_id", "pinned"], name: "idx_pinned_messages", where: "(pinned = true)"
     t.index ["connection_id"], name: "index_messages_on_connection_id"
     t.index ["referenced_post_id"], name: "index_messages_on_referenced_post_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
@@ -180,6 +196,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_15_200000) do
     t.boolean "show_height", default: true, null: false
     t.boolean "show_body_type", default: true, null: false
     t.boolean "show_online_status", default: true, null: false
+    t.string "remote_avatar_url"
     t.index ["age"], name: "index_profiles_on_age"
     t.index ["city"], name: "index_profiles_on_city"
     t.index ["hidden"], name: "index_profiles_on_hidden"
@@ -218,6 +235,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_15_200000) do
     t.datetime "last_active_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "privacy_settings", default: {}, null: false
+    t.jsonb "notification_preferences", default: {}, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["role"], name: "index_users_on_role"
@@ -233,8 +252,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_15_200000) do
   add_foreign_key "group_memberships", "groups"
   add_foreign_key "group_memberships", "users"
   add_foreign_key "groups", "users", column: "creator_id"
+  add_foreign_key "message_reactions", "messages"
+  add_foreign_key "message_reactions", "users"
   add_foreign_key "messages", "connections"
   add_foreign_key "messages", "posts", column: "referenced_post_id"
+  add_foreign_key "messages", "users", column: "pinned_by_id"
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "post_likes", "posts"

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, RefreshCw, Locate } from "lucide-react";
-import { profilesService } from "@/services/profiles.service";
+import { useMyProfile, useConnect } from "@/hooks/queries";
 import { api } from "@/lib/api";
+import type { JsonApiResource, SuggestionProfile } from "@/types";
 import { UserCard } from "@/components/shared/UserCard";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { Shimmer } from "@/components/ui/Shimmer";
@@ -34,15 +35,17 @@ function CardSkeleton() {
 
 export function NearbyPage() {
   const navigate      = useNavigate();
-  const queryClient   = useQueryClient();
+  const { data: myProfile } = useMyProfile();
   const [geo, setGeo] = useState<GeoState>("idle");
   const [city, setCity] = useState<string>("");
   const [radius, setRadius] = useState(25); // km cosmetic slider
 
   // Attempt to read saved city from profile context
   useEffect(() => {
-    // Try to detect city from profile or prompt geo
-  }, []);
+    if (myProfile?.city && !city) {
+      setCity(myProfile.city);
+    }
+  }, [myProfile?.city]);
 
   const requestLocation = () => {
     if (!navigator.geolocation) {
@@ -87,14 +90,7 @@ export function NearbyPage() {
     enabled: city.length >= 2,
   });
 
-  const connect = useMutation({
-    mutationFn: (receiverId: number) => api.post("/connections", { receiver_id: receiverId }),
-    onSuccess: () => {
-      toast.success("Connection request sent!");
-      queryClient.invalidateQueries({ queryKey: ["nearby"] });
-    },
-    onError: () => toast.error("Could not send request."),
-  });
+  const connect = useConnect();
 
   const profiles = data ?? [];
 
@@ -219,10 +215,10 @@ export function NearbyPage() {
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {profiles.map((p: any) => (
+            {profiles.map((p: JsonApiResource<SuggestionProfile>) => (
               <UserCard
                 key={p.id}
-                profile={{ id: Number(p.id), ...p.attributes }}
+                profile={{ ...p.attributes, id: Number(p.id) }}
                 onView={() => navigate(`/profile/${p.id}`)}
                 onConnect={() => connect.mutate(Number(p.id))}
                 loading={connect.isPending}
