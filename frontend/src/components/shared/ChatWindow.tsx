@@ -1,32 +1,24 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Send, Smile, Heart, Play, Info, ImageIcon, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GifPicker } from "./GifPicker";
-import { messagesService } from "@/services/messages.service";
+import { useMessages, useSendMessage, useSendImage } from "@/hooks/queries";
 import { useConversationChannel } from "@/hooks/useActionCable";
 import { useAuthStore } from "@/store/authStore";
+import { queryKeys } from "@/lib/queryKeys";
 import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import type { OtherUser, ReferencedPost } from "@/types";
 
 interface ChatWindowProps {
   connectionId: number;
   otherUserName: string;
-  otherUser?: any;
+  otherUser?: OtherUser;
   onInfoClick?: () => void;
-}
-
-interface ReferencedPost {
-  id: number;
-  caption?: string;
-  author_name: string;
-  author_id: number;
-  media_url?: string;
-  media_type?: "image" | "video";
-  media_count: number;
 }
 
 function isGifUrl(text: string): boolean {
@@ -112,29 +104,10 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
   const queryClient  = useQueryClient();
   const currentUser  = useAuthStore((s) => s.user);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["messages", connectionId],
-    queryFn:  () => messagesService.getMessages(connectionId).then((r) => r.data.messages),
-  });
+  const { data: messages = [], isLoading } = useMessages(connectionId);
 
-  const send = useMutation({
-    mutationFn: (text: string) => messagesService.sendMessage(connectionId, text),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["messages", connectionId] });
-      setBody("");
-      inputRef.current?.focus();
-    },
-  });
-
-  const sendImage = useMutation({
-    mutationFn: (file: File) => messagesService.sendImage(connectionId, file, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["messages", connectionId] });
-      setBody("");
-      clearImage();
-      inputRef.current?.focus();
-    },
-  });
+  const send = useSendMessage(connectionId);
+  const sendImageMutation = useSendImage(connectionId);
 
   const clearImage = () => {
     setImageFile(null);
@@ -152,22 +125,30 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
   };
 
   useConversationChannel(connectionId, () => {
-    queryClient.invalidateQueries({ queryKey: ["messages", connectionId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
   });
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [data]);
+  }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (imageFile) {
-      sendImage.mutate(imageFile);
+      sendImageMutation.mutate({ file: imageFile, body });
+      setBody("");
+      clearImage();
+      inputRef.current?.focus();
       return;
     }
     const trimmed = body.trim();
     if (!trimmed) return;
-    send.mutate(trimmed);
+    send.mutate(trimmed, {
+      onSuccess: () => {
+        setBody("");
+        inputRef.current?.focus();
+      },
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -176,8 +157,6 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
       handleSubmit(e as unknown as React.FormEvent);
     }
   };
-
-  const messages = data?.data ?? [];
 
   // Group messages by date
   let lastDateStr = "";
@@ -251,7 +230,7 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
           </div>
         )}
 
-        {messages.map((msg: any, i: number) => {
+        {messages.map((msg, i) => {
           const attrs = msg.attributes;
           const isOwn = attrs.sender_id === currentUser?.id;
           const msgDate = attrs.created_at?.slice(0, 10);
@@ -263,7 +242,7 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
 
           const referencedPost: ReferencedPost | null = attrs.referenced_post || null;
           const messageType: string = attrs.message_type || "text";
-          const isGif = isGifUrl(attrs.body);
+          const isGif = isGifUrl(attrs.body ?? "");
           const hasImage = !!attrs.image_url;
 
           return (
@@ -466,7 +445,7 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
           type="submit"
           variant="pink"
           size="icon"
-          disabled={(!body.trim() && !imageFile) || send.isPending || sendImage.isPending}
+          disabled={(!body.trim() && !imageFile) || send.isPending || sendImageMutation.isPending}
           aria-label="Send message"
           className="h-9 w-9"
         >

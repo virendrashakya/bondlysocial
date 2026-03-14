@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, DragEvent } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, MessageCircle, Send, MoreHorizontal, ImageIcon, Video, X, ChevronLeft, ChevronRight, Lock, Globe, MapPin, Plus, ArrowLeft, Upload, Camera } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { usePosts, useLikePost, useCreatePost, useConnections } from "@/hooks/queries";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -10,31 +10,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-
-interface MediaItem {
-  url: string;
-  type: "image" | "video";
-  id: number;
-}
-
-interface Post {
-  id: number;
-  author_name: string;
-  author_avatar?: string;
-  author_id: number;
-  caption?: string;
-  media: MediaItem[];
-  media_url?: string;
-  media_type?: "image" | "video";
-  media_count: number;
-  likes_count: number;
-  comments_count: number;
-  liked_by_me: boolean;
-  is_own: boolean;
-  visibility: "public" | "connections";
-  location?: string;
-  created_at: string;
-}
+import type { Post, MediaItem } from "@/types";
 
 // --- Instagram-style Carousel ---
 function MediaCarousel({ media }: { media: MediaItem[] }) {
@@ -148,24 +124,8 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
   const [dragOver, setDragOver] = useState(false);
   const [activePreview, setActivePreview] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient();
 
-  const submit = useMutation({
-    mutationFn: async () => {
-      const form = new FormData();
-      if (caption) form.append("post[caption]", caption);
-      form.append("post[visibility]", visibility);
-      if (location) form.append("post[location]", location);
-      files.forEach((file) => form.append("post[media_files][]", file));
-      return api.post("/posts", form, { headers: { "Content-Type": "multipart/form-data" } });
-    },
-    onSuccess: () => {
-      toast.success("Post shared!");
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      onClose();
-    },
-    onError: () => toast.error("Failed to post. Try again."),
-  });
+  const submit = useCreatePost(() => onClose());
 
   const addFiles = useCallback((incoming: File[]) => {
     const valid = incoming.filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
@@ -244,7 +204,7 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
           ) : step === "details" ? (
             <Button
               variant="ghost"
-              onClick={() => submit.mutate()}
+              onClick={() => submit.mutate({ caption, visibility, location, files })}
               disabled={submit.isPending || (files.length === 0 && !caption.trim())}
               className="text-sm font-semibold text-brand hover:text-brand-hover disabled:opacity-40"
             >
@@ -635,10 +595,7 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
   const [search, setSearch] = useState("");
   const [sending, setSending] = useState<number | null>(null);
 
-  const { data: connections } = useQuery({
-    queryKey: ["connections"],
-    queryFn: () => api.get("/connections").then((r) => r.data.connections?.data ?? r.data.connections ?? []),
-  });
+  const { data: connections } = useConnections();
 
   const handleShare = async (connectionId: number) => {
     setSending(connectionId);
@@ -734,22 +691,11 @@ interface PostFeedProps {
 }
 
 export function PostFeed({ userId, showCreateBox = true, gridView = false }: PostFeedProps) {
-  const queryClient = useQueryClient();
   const [sharePost, setSharePost] = useState<Post | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["posts", userId],
-    queryFn: () => {
-      const url = userId ? `/users/${userId}/posts` : "/posts";
-      return api.get(url).then((r) => (r.data.posts ?? []) as Post[]);
-    },
-  });
-
-  const like = useMutation({
-    mutationFn: (postId: number) => api.post(`/posts/${postId}/like`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["posts"] }),
-  });
+  const { data, isLoading } = usePosts(userId);
+  const like = useLikePost();
 
   const posts: Post[] = data ?? [];
 

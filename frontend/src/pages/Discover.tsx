@@ -1,6 +1,3 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { profilesService } from "@/services/profiles.service";
-import { api } from "@/lib/api";
 import { UserCard } from "@/components/shared/UserCard";
 import { StoryStrip } from "@/components/shared/StoryStrip";
 import { AuroraBg } from "@/components/ui/AuroraBg";
@@ -8,7 +5,8 @@ import { Shimmer } from "@/components/ui/Shimmer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useNavigate } from "react-router-dom";
 import { useAppConfig } from "@/hooks/useAppConfig";
-import toast from "react-hot-toast";
+import { useSuggestions, useConnect } from "@/hooks/queries";
+import type { JsonApiResource, SuggestionProfile } from "@/types";
 import { SearchX } from "lucide-react";
 
 function CardSkeleton() {
@@ -29,26 +27,11 @@ function CardSkeleton() {
 }
 
 export function DiscoverPage() {
-  const navigate    = useNavigate();
-  const queryClient = useQueryClient();
-  const appConfig   = useAppConfig();
+  const navigate  = useNavigate();
+  const appConfig = useAppConfig();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["suggestions"],
-    queryFn:  () => profilesService.getSuggestions().then((r) => r.data.profiles?.data ?? []),
-    staleTime: 1000 * 60 * 5,
-    enabled: appConfig.discover_enabled,
-  });
-
-  const connect = useMutation({
-    mutationFn: (receiverId: number) =>
-      api.post("/connections", { receiver_id: receiverId }),
-    onSuccess: () => {
-      toast.success("Connection request sent!");
-      queryClient.invalidateQueries({ queryKey: ["suggestions"] });
-    },
-    onError: () => toast.error("Could not send request. Try again."),
-  });
+  const { data, isLoading, isError } = useSuggestions(appConfig.discover_enabled);
+  const connect = useConnect();
 
   if (!appConfig.discover_enabled) {
     return (
@@ -64,14 +47,14 @@ export function DiscoverPage() {
   }
 
   // Derive story strip profiles — those seen recently
-  const rawProfiles = data ?? [];
+  const rawProfiles: JsonApiResource<SuggestionProfile>[] = data ?? [];
   const onlineProfiles = rawProfiles
-    .filter((p: any) => {
+    .filter((p: JsonApiResource<SuggestionProfile>) => {
       const lastSeen = p.attributes.last_seen_at;
       return lastSeen && (Date.now() - new Date(lastSeen).getTime()) < 5 * 60 * 1000;
     })
     .slice(0, 12)
-    .map((p: any) => ({
+    .map((p: JsonApiResource<SuggestionProfile>) => ({
       id: Number(p.id),
       name: p.attributes.name ?? "User",
       avatar_url: p.attributes.avatar_url,
@@ -139,10 +122,10 @@ export function DiscoverPage() {
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {rawProfiles.map((p: any) => (
+        {rawProfiles.map((p: JsonApiResource<SuggestionProfile>) => (
           <UserCard
             key={p.id}
-            profile={{ id: Number(p.id), ...p.attributes }}
+            profile={{ ...p.attributes, id: Number(p.id) }}
             onView={() => navigate(`/profile/${p.id}`)}
             onConnect={() => connect.mutate(Number(p.id))}
             loading={connect.isPending}

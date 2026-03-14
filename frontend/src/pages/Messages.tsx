@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import { connectionsService } from "@/services/connections.service";
-import { messagesService } from "@/services/messages.service";
+import { useConnections, useMessagePreview } from "@/hooks/queries";
+import type { JsonApiResource, ConnectionAttributes, MessageAttributes } from "@/types";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { formatDistanceToNow } from "date-fns";
@@ -11,17 +10,12 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-function ConversationItem({ connection, onClick }: { connection: any; onClick: () => void }) {
+function ConversationItem({ connection, onClick }: { connection: JsonApiResource<ConnectionAttributes>; onClick: () => void }) {
   const other = connection.attributes.other_user;
 
-  const { data: msgData } = useQuery({
-    queryKey: ["messages-preview", Number(connection.id)],
-    queryFn: () =>
-      messagesService.getMessages(Number(connection.id)).then((r) => r.data.messages?.data ?? []),
-    staleTime: 30_000,
-  });
+  const { data: msgData } = useMessagePreview(Number(connection.id));
 
-  const messages: any[] = msgData ?? [];
+  const messages: JsonApiResource<MessageAttributes>[] = msgData ?? [];
   const lastMsg = messages[messages.length - 1];
   const preview = lastMsg?.attributes?.body ?? "Say hello!";
   const ts = lastMsg?.attributes?.created_at ?? connection.attributes.created_at;
@@ -76,12 +70,9 @@ function ConversationItem({ connection, onClick }: { connection: any; onClick: (
 export function MessagesPage() {
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["connections"],
-    queryFn: () => connectionsService.getAll().then((r) => r.data.connections?.data ?? []),
-  });
+  const { data, isLoading } = useConnections();
 
-  const connections: any[] = data ?? [];
+  const connections: JsonApiResource<ConnectionAttributes>[] = data ?? [];
 
   return (
     <div className="relative max-w-2xl mx-auto px-4 py-6">
@@ -138,7 +129,7 @@ export function MessagesPage() {
       {/* Conversation list */}
       {!isLoading && connections.length > 0 && (
         <div className="space-y-2" role="list" aria-label="Conversations">
-          {connections.map((c: any) => (
+          {connections.map((c: JsonApiResource<ConnectionAttributes>) => (
             <div key={c.id} role="listitem">
               <ConversationItem
                 connection={c}

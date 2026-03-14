@@ -1,11 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, Check, X, UserCheck, Clock } from "lucide-react";
-import { connectionsService } from "@/services/connections.service";
+import { useConnections, useConnectionRequests, useAcceptConnection, useRejectConnection } from "@/hooks/queries";
+import type { JsonApiResource, ConnectionAttributes } from "@/types";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { formatDistanceToNow } from "date-fns";
-import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -15,34 +14,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 export function ConnectionsPage() {
-  const navigate    = useNavigate();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const { data: connData, isLoading: loadingConns } = useQuery({
-    queryKey: ["connections"],
-    queryFn:  () => connectionsService.getAll().then((r) => r.data.connections?.data ?? []),
-  });
-
-  const { data: reqData, isLoading: loadingReqs } = useQuery({
-    queryKey: ["connection-requests"],
-    queryFn:  () => connectionsService.getRequests().then((r) => r.data.requests?.data ?? []),
-  });
-
-  const accept = useMutation({
-    mutationFn: (id: number) => connectionsService.accept(id),
-    onSuccess: () => {
-      toast.success("Connection accepted!");
-      queryClient.invalidateQueries({ queryKey: ["connections"] });
-      queryClient.invalidateQueries({ queryKey: ["connection-requests"] });
-    },
-  });
-
-  const reject = useMutation({
-    mutationFn: (id: number) => connectionsService.reject(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["connection-requests"] });
-    },
-  });
+  const { data: connData, isLoading: loadingConns } = useConnections();
+  const { data: reqData, isLoading: loadingReqs } = useConnectionRequests();
+  const accept = useAcceptConnection();
+  const reject = useRejectConnection();
 
   const requests    = reqData ?? [];
   const connections = connData ?? [];
@@ -97,7 +74,7 @@ export function ConnectionsPage() {
                 action={{ label: "Go to Discover", onClick: () => navigate("/discover") }}
               />
             )}
-            {connections.map((c: any) => {
+            {connections.map((c: JsonApiResource<ConnectionAttributes>) => {
               const other = c.attributes.other_user;
               return (
                 <GlassCard
@@ -143,7 +120,7 @@ export function ConnectionsPage() {
                 text="No pending requests right now."
               />
             )}
-            {requests.map((r: any) => {
+            {requests.map((r: JsonApiResource<ConnectionAttributes>) => {
               const other = r.attributes.other_user;
               return (
                 <GlassCard

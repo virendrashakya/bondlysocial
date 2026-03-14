@@ -1,18 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { X, User, Calendar, Image, Video, ShieldCheck, Flag, Ban, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
-import { messagesService } from "@/services/messages.service";
+import { useMessages } from "@/hooks/queries";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import type { OtherUser } from "@/types";
 
 interface ChatDetailsDrawerProps {
   connectionId: number;
-  otherUser: any;
+  otherUser: OtherUser;
   otherUserName: string;
   connectedAt?: string;
   onClose: () => void;
@@ -27,16 +26,11 @@ export function ChatDetailsDrawer({
 }: ChatDetailsDrawerProps) {
   const navigate = useNavigate();
 
-  const { data } = useQuery({
-    queryKey: ["messages", connectionId],
-    queryFn: () => messagesService.getMessages(connectionId).then((r) => r.data.messages),
-  });
-
-  const messages: any[] = data?.data ?? [];
+  const { data: messages = [] } = useMessages(connectionId);
 
   // Extract shared media from messages
   const sharedMedia = messages
-    .flatMap((msg: any) => {
+    .flatMap((msg) => {
       const items: { url: string; type: "image" | "video"; date: string }[] = [];
       const attrs = msg.attributes;
       // From referenced posts

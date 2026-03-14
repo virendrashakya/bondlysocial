@@ -61,7 +61,7 @@ interface ButtonGroupOption {
 }
 
 interface ButtonGroupProps {
-  options: ButtonGroupOption[];
+  options: readonly ButtonGroupOption[];
   value?: string;
   onChange: (value: string) => void;
   ariaLabel?: string;

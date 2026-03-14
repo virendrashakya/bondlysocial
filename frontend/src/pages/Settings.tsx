@@ -1,8 +1,13 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { Camera, ShieldCheck, AlertCircle, Lock, Eye, EyeOff, Bell, Trash2, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, Users } from "lucide-react";
-import { profilesService, Profile } from "@/services/profiles.service";
+import type { Profile } from "@/types";
+import {
+  INTENTS, INTERESTS, CULTURAL_BACKGROUNDS, RELIGIONS, BODY_TYPES,
+  DRINKING_OPTIONS, SMOKING_OPTIONS, WORKOUT_OPTIONS, RELATIONSHIP_STATUSES,
+  APPEARANCE_TAGS, LANGUAGES,
+} from "@/constants";
+import { useMyProfile, useUpdateProfile, useUploadAvatar, useUploadSelfie } from "@/hooks/queries";
 import { useAuthStore } from "@/store/authStore";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { AuroraBg } from "@/components/ui/AuroraBg";
@@ -20,118 +25,17 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-const INTENTS = [
-  "friendship", "activity_partner", "networking",
-  "emotional_support", "serious_relationship", "marriage",
-];
-
-const INTERESTS = [
-  "Reading", "Hiking", "Cooking", "Music", "Travel", "Fitness",
-  "Movies", "Yoga", "Gaming", "Art", "Tech", "Startup",
-  "Spirituality", "Photography", "Dance", "Writing",
-];
-
-const CULTURAL_BACKGROUNDS = [
-  { value: "north_indian", label: "North Indian" },
-  { value: "south_indian", label: "South Indian" },
-  { value: "east_indian", label: "East Indian" },
-  { value: "west_indian", label: "West Indian" },
-  { value: "north_east_indian", label: "North East Indian" },
-  { value: "mixed_indian", label: "Mixed Indian" },
-  { value: "indian_origin_abroad", label: "Indian Origin (Abroad)" },
-  { value: "international", label: "International" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
-];
-
-const RELIGIONS = [
-  { value: "hindu", label: "Hindu" },
-  { value: "muslim", label: "Muslim" },
-  { value: "christian", label: "Christian" },
-  { value: "sikh", label: "Sikh" },
-  { value: "jain", label: "Jain" },
-  { value: "buddhist", label: "Buddhist" },
-  { value: "other", label: "Other" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
-];
-
-const BODY_TYPES = [
-  { value: "slim", label: "Slim" },
-  { value: "athletic", label: "Athletic" },
-  { value: "average", label: "Average" },
-  { value: "curvy", label: "Curvy" },
-  { value: "heavy", label: "Heavy" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
-];
-
-const DRINKING_OPTIONS = [
-  { value: "never", label: "Never" },
-  { value: "social", label: "Social" },
-  { value: "often", label: "Often" },
-];
-
-const SMOKING_OPTIONS = [
-  { value: "no", label: "No" },
-  { value: "occasionally", label: "Occasionally" },
-  { value: "yes", label: "Yes" },
-];
-
-const WORKOUT_OPTIONS = [
-  { value: "none", label: "None" },
-  { value: "weekly", label: "Weekly" },
-  { value: "daily", label: "Daily" },
-];
-
-const RELATIONSHIP_STATUSES = [
-  { value: "single", label: "Single" },
-  { value: "divorced", label: "Divorced" },
-  { value: "separated", label: "Separated" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
-];
-
-const APPEARANCE_TAGS = [
-  "bearded", "glasses", "tattoos", "long_hair", "short_hair",
-  "fitness_focused", "minimalist", "traditional", "traveler", "artist",
-];
-
-const LANGUAGES = [
-  "Hindi", "English", "Bengali", "Telugu", "Marathi", "Tamil",
-  "Gujarati", "Kannada", "Malayalam", "Punjabi", "Odia", "Urdu",
-  "Assamese", "Sanskrit", "Konkani", "Nepali", "French", "Spanish",
-];
-
 export function SettingsPage() {
   const [tab, setTab] = useState("profile");
   const user          = useAuthStore((s) => s.user);
-  const queryClient   = useQueryClient();
 
-  const { data: profileData } = useQuery({
-    queryKey: ["my-profile"],
-    queryFn:  () =>
-      profilesService.getProfile(user!.id).then((r) => r.data.profile.data?.attributes as Profile),
-    enabled: !!user,
-  });
+  const { data: profileData } = useMyProfile();
+  const update       = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
+  const uploadSelfie = useUploadSelfie();
 
   const { register, handleSubmit, control, watch, formState: { isDirty } } = useForm<Partial<Profile>>({
     values: profileData,
-  });
-
-  const update = useMutation({
-    mutationFn: (d: Partial<Profile>) => profilesService.updateProfile(d),
-    onSuccess: () => {
-      toast.success("Profile updated");
-      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    },
-    onError: () => toast.error("Failed to save changes"),
-  });
-
-  const uploadAvatar = useMutation({
-    mutationFn: (file: File) => profilesService.uploadAvatar(file),
-    onSuccess:  () => { toast.success("Photo updated"); queryClient.invalidateQueries({ queryKey: ["my-profile"] }); },
-  });
-
-  const uploadSelfie = useMutation({
-    mutationFn: (file: File) => profilesService.uploadSelfie(file),
-    onSuccess:  () => toast.success("Selfie submitted for review"),
   });
 
   // Local privacy prefs (would persist to backend in production)

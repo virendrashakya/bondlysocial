@@ -1,6 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 import { IntentBadge } from "./IntentBadge";
-import { Profile } from "@/services/profiles.service";
+import type { SuggestionProfile } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface UserCardProps {
-  profile: Profile & { match_score?: number; last_seen_at?: string };
+  profile: SuggestionProfile;
   onConnect?: () => void;
   onView?: () => void;
   loading?: boolean;

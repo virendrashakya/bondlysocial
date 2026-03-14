@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCheck, UserPlus, MessageSquare, Users, Info } from "lucide-react";
-import { notificationsService } from "@/services/notifications.service";
+import { useNotifications, useMarkAllNotificationsRead, useMarkNotificationRead } from "@/hooks/queries";
+import type { JsonApiResource, NotificationAttributes } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -15,34 +15,17 @@ const KIND_CONFIG: Record<string, { icon: React.ElementType; color: string }> = 
 };
 
 export function NotificationsPage() {
-  const queryClient = useQueryClient();
   const navigate    = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["notifications"],
-    queryFn:  () => notificationsService.getAll().then((r) => r.data),
-  });
+  const { data, isLoading } = useNotifications();
 
-  const markAll = useMutation({
-    mutationFn: notificationsService.markAllRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications-count"] });
-    },
-  });
+  const markAll = useMarkAllNotificationsRead();
+  const markOne = useMarkNotificationRead();
 
-  const markOne = useMutation({
-    mutationFn: (id: number) => notificationsService.markRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications-count"] });
-    },
-  });
+  const notifications: JsonApiResource<NotificationAttributes>[] = data?.notifications ?? [];
+  const unreadCount: number  = data?.unreadCount ?? 0;
 
-  const notifications: any[] = data?.notifications?.data ?? [];
-  const unreadCount: number  = data?.unread_count ?? 0;
-
-  const handleClick = (n: any) => {
+  const handleClick = (n: JsonApiResource<NotificationAttributes>) => {
     const meta = n.attributes.metadata ?? {};
     if (!n.attributes.read) markOne.mutate(Number(n.id));
 
@@ -97,7 +80,7 @@ export function NotificationsPage() {
       )}
 
       <div className="space-y-2">
-        {notifications.map((n: any) => {
+        {notifications.map((n: JsonApiResource<NotificationAttributes>) => {
           const cfg    = KIND_CONFIG[n.attributes.kind] ?? KIND_CONFIG.system;
           const Icon   = cfg.icon;
           const unread = !n.attributes.read;
