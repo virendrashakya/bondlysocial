@@ -1,8 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Info } from "lucide-react";
+import { useState } from "react";
 import { connectionsService } from "@/services/connections.service";
 import { ChatWindow } from "@/components/shared/ChatWindow";
+import { ChatDetailsDrawer } from "@/components/shared/ChatDetailsDrawer";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -10,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export function ChatPage() {
   const { id }   = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [showDetails, setShowDetails] = useState(false);
 
   const connectionId = Number(id);
 
@@ -21,6 +24,7 @@ export function ChatPage() {
   const connection = (data ?? []).find((c: any) => Number(c.id) === connectionId);
   const otherUser  = connection?.attributes?.other_user;
   const otherName  = otherUser?.name ?? "Chat";
+  const otherUserId = otherUser?.id;
 
   if (isLoading) {
     return (
@@ -55,28 +59,62 @@ export function ChatPage() {
         >
           <ArrowLeft size={20} />
         </Button>
-        <Avatar className="h-9 w-9">
-          <AvatarImage src={otherUser?.avatar_url} alt={otherName} />
-          <AvatarFallback>{otherName[0]}</AvatarFallback>
-        </Avatar>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-white text-sm">{otherName}</span>
-            {otherUser?.verified && (
-              <ShieldCheck size={13} className="text-emerald-400" aria-label="Verified user" />
-            )}
+
+        {/* Clickable avatar + name → profile */}
+        <button
+          onClick={() => otherUserId && navigate(`/profile/${otherUserId}`)}
+          className="flex items-center gap-3 flex-1 min-w-0"
+        >
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={otherUser?.avatar_url} alt={otherName} />
+            <AvatarFallback>{otherName[0]}</AvatarFallback>
+          </Avatar>
+          <div className="text-left min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-white text-sm truncate">{otherName}</span>
+              {otherUser?.verified && (
+                <ShieldCheck size={13} className="text-emerald-400 flex-shrink-0" aria-label="Verified user" />
+              )}
+            </div>
+            <span className="text-[11px] text-zinc-500 truncate block">
+              {otherUser?.intent?.replace(/_/g, " ")}
+            </span>
           </div>
-          <span className="text-[11px] text-zinc-500">
-            {otherUser?.intent?.replace(/_/g, " ")}
-          </span>
-        </div>
+        </button>
+
+        {/* Info button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowDetails(true)}
+          aria-label="Chat details"
+          className="h-9 w-9 text-zinc-400 hover:text-white flex-shrink-0"
+        >
+          <Info size={18} />
+        </Button>
       </div>
 
       <div className="flex-1 min-h-0 overflow-hidden">
         {connectionId && (
-          <ChatWindow connectionId={connectionId} otherUserName={otherName} otherUser={otherUser} />
+          <ChatWindow
+            connectionId={connectionId}
+            otherUserName={otherName}
+            otherUser={otherUser}
+            onInfoClick={() => setShowDetails(true)}
+          />
         )}
       </div>
+
+      {/* Chat details drawer */}
+      {showDetails && (
+        <ChatDetailsDrawer
+          connectionId={connectionId}
+          otherUser={otherUser}
+          otherUserName={otherName}
+          connectedAt={connection?.attributes?.created_at}
+          onClose={() => setShowDetails(false)}
+        />
+      )}
     </div>
   );
 }

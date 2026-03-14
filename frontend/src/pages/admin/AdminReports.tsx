@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const STATUS_TABS = ["open", "reviewed", "dismissed"] as const;
 
@@ -37,20 +38,15 @@ export function AdminReportsPage() {
       <p className="text-sm text-zinc-500 mb-5">Review user safety reports</p>
 
       {/* Status tabs */}
-      <div className="flex gap-1 bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] p-1 rounded-xl w-fit mb-6">
-        {STATUS_TABS.map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className={cn(
-              "px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors",
-              status === s ? "bg-brand text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-            )}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      <Tabs value={status} onValueChange={(v) => setStatus(v as typeof status)} className="mb-6">
+        <TabsList className="w-fit">
+          {STATUS_TABS.map((s) => (
+            <TabsTrigger key={s} value={s} className="capitalize">
+              {s}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {isLoading && (
         <div className="space-y-3">

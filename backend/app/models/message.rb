@@ -3,8 +3,11 @@ class Message < ApplicationRecord
   belongs_to :sender, class_name: "User"
   belongs_to :referenced_post, class_name: "Post", optional: true
 
+  has_one_attached :image
+
   validates :body, length: { maximum: 2000 }
-  validate  :body_or_post_reference_required
+  validate  :image_format_and_size, if: :image_attached?
+  validate  :body_or_post_or_image_required
   validate  :sender_must_be_participant
 
   after_create_commit :broadcast_to_channel
@@ -12,8 +15,21 @@ class Message < ApplicationRecord
 
   private
 
-  def body_or_post_reference_required
-    errors.add(:base, "Message must have a body or a post reference") if body.blank? && referenced_post_id.blank?
+  def body_or_post_or_image_required
+    errors.add(:base, "Message must have a body, a post reference, or an image") if body.blank? && referenced_post_id.blank? && !image_attached?
+  end
+
+  def image_attached?
+    image.attached?
+  end
+
+  def image_format_and_size
+    unless image.content_type.in?(%w[image/png image/jpeg image/gif image/webp])
+      errors.add(:image, "must be a PNG, JPEG, GIF, or WebP")
+    end
+    if image.byte_size > 10.megabytes
+      errors.add(:image, "must be less than 10MB")
+    end
   end
 
   def sender_must_be_participant
@@ -40,10 +56,14 @@ class Message < ApplicationRecord
   end
 
   def notification_body
-    if referenced_post_id.present? && body.blank?
+    if image_attached? && body.blank?
+      "Sent you an image"
+    elsif referenced_post_id.present? && body.blank?
       "Shared a post with you"
-    else
+    elsif body.present?
       body.truncate(80)
+    else
+      "Sent you a message"
     end
   end
 end

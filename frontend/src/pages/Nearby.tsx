@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 
 type GeoState = "idle" | "requesting" | "granted" | "denied" | "error";
@@ -141,7 +142,7 @@ export function NearbyPage() {
         {/* Radius slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs text-zinc-500">Search radius</label>
+            <Label className="text-xs text-zinc-500">Search radius</Label>
             <span className="text-xs font-semibold text-white">{radius} km</span>
           </div>
           <Slider
@@ -213,9 +214,9 @@ export function NearbyPage() {
             <p className="text-sm text-zinc-500">
               <span className="text-white font-semibold">{profiles.length}</span> people near {city}
             </p>
-            <button onClick={() => refetch()} aria-label="Refresh results" className="text-zinc-600 hover:text-white transition-colors">
+            <Button variant="ghost" size="icon" onClick={() => refetch()} aria-label="Refresh results">
               <RefreshCw size={14} />
-            </button>
+            </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {profiles.map((p: any) => (

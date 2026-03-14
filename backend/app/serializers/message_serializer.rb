@@ -27,8 +27,16 @@ class MessageSerializer
     }
   end
 
+  attribute :image_url do |message|
+    if message.image.attached?
+      Rails.application.routes.url_helpers.rails_blob_url(message.image, only_path: false)
+    end
+  end
+
   attribute :message_type do |message|
-    if message.referenced_post_id.present?
+    if message.image.attached?
+      message.body.present? ? "image_with_text" : "image"
+    elsif message.referenced_post_id.present?
       message.body.present? ? "post_share_with_text" : "post_share"
     else
       "text"

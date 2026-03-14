@@ -27,6 +27,7 @@ import { NotificationsPage }  from "./pages/Notifications";
 import { SettingsPage }       from "./pages/Settings";
 import { NearbyPage }         from "./pages/Nearby";
 import { FeedPage }          from "./pages/Feed";
+import { UserPostsPage }     from "./pages/UserPosts";
 
 // Admin pages
 import { AdminOverviewPage }  from "./pages/admin/AdminOverview";
@@ -97,7 +98,8 @@ function AppRoutes() {
         <Route path="/discover"      element={<RequireAuth><AppLayout><DiscoverPage /></AppLayout></RequireAuth>} />
         <Route path="/nearby"        element={<RequireAuth><AppLayout><NearbyPage /></AppLayout></RequireAuth>} />
         <Route path="/feed"          element={<RequireAuth><AppLayout><FeedPage /></AppLayout></RequireAuth>} />
-        <Route path="/profile/:id"   element={<RequireAuth><AppLayout><ProfileViewPage /></AppLayout></RequireAuth>} />
+        <Route path="/profile/:id"       element={<RequireAuth><AppLayout><ProfileViewPage /></AppLayout></RequireAuth>} />
+        <Route path="/profile/:id/posts" element={<RequireAuth><AppLayout><UserPostsPage /></AppLayout></RequireAuth>} />
         <Route path="/connections"   element={<RequireAuth><AppLayout><ConnectionsPage /></AppLayout></RequireAuth>} />
         <Route path="/chat/:id"      element={<RequireAuth><AppLayout><ChatPage /></AppLayout></RequireAuth>} />
         <Route path="/chat"          element={<RequireAuth><AppLayout><MessagesPage /></AppLayout></RequireAuth>} />

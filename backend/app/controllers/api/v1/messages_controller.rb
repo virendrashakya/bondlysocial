@@ -27,6 +27,8 @@ module Api
           referenced_post_id: params[:referenced_post_id]
         )
 
+        message.image.attach(params[:image]) if params[:image].present?
+
         if message.save
           render json: { message: MessageSerializer.new(message).serializable_hash }, status: :created
         else

@@ -373,13 +373,14 @@ export function OnboardingPage() {
                     onChange={handleAvatarChange}
                   />
                   {preview && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="xs"
                       onClick={() => { setAvatar(null); setPreview(null); }}
-                      className="text-xs text-zinc-500 hover:text-white transition-colors"
                     >
                       Remove photo
-                    </button>
+                    </Button>
                   )}
                 </div>
 

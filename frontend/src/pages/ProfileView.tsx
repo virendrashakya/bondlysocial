@@ -1,14 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ShieldCheck, MapPin, Briefcase, Flag, Ban, Grid3X3, List, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, MessageSquare } from "lucide-react";
+import { ArrowLeft, ShieldCheck, MapPin, Briefcase, Flag, Ban, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, MessageSquare, Images } from "lucide-react";
 import { useState } from "react";
 import { profilesService } from "@/services/profiles.service";
 import { connectionsService } from "@/services/connections.service";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { ReportModal } from "@/components/shared/ReportModal";
-import { PostFeed } from "@/components/shared/PostFeed";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +19,6 @@ export function ProfileViewPage() {
   const navigate          = useNavigate();
   const queryClient       = useQueryClient();
   const [showReport, setShowReport] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["profile", id],
@@ -255,38 +252,15 @@ export function ProfileViewPage() {
         </div>
       </GlassCard>
 
-      {/* Media Gallery */}
+      {/* View Posts button */}
       <div className="mt-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-white">Posts</h3>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setViewMode("grid")}
-              aria-label="Grid view"
-              className={cn(
-                "h-8 w-8",
-                viewMode === "grid" ? "text-brand bg-brand-muted" : "text-zinc-500 hover:text-white"
-              )}
-            >
-              <Grid3X3 size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setViewMode("list")}
-              aria-label="List view"
-              className={cn(
-                "h-8 w-8",
-                viewMode === "list" ? "text-brand bg-brand-muted" : "text-zinc-500 hover:text-white"
-              )}
-            >
-              <List size={16} />
-            </Button>
-          </div>
-        </div>
-        <PostFeed userId={Number(id)} showCreateBox={false} gridView={viewMode === "grid"} />
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={() => navigate(`/profile/${id}/posts`)}
+        >
+          <Images size={16} /> View Posts
+        </Button>
       </div>
 
       {showReport && (

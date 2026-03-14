@@ -12,6 +12,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Chip } from "@/components/ui/chip";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { GlassModal } from "@/components/ui/GlassModal";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -246,20 +248,20 @@ export function GroupsPage() {
       >
         <form onSubmit={handleSubmit((d) => create.mutate(d))} className="space-y-3">
           <div className="space-y-1">
-            <label htmlFor="group-title" className="text-sm font-medium text-zinc-300">Group name <span className="text-brand" aria-hidden="true">*</span></label>
+            <Label htmlFor="group-title">Group name <span className="text-brand" aria-hidden="true">*</span></Label>
             <Input id="group-title" {...register("title")} placeholder="Morning Runners Bangalore" aria-required="true" />
             {errors.title && <p role="alert" className="text-xs text-rose-400">{errors.title.message}</p>}
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="group-city" className="text-sm font-medium text-zinc-300">City <span className="text-brand" aria-hidden="true">*</span></label>
+            <Label htmlFor="group-city">City <span className="text-brand" aria-hidden="true">*</span></Label>
             <Input id="group-city" {...register("city")} placeholder="Bangalore" aria-required="true" />
             {errors.city && <p role="alert" className="text-xs text-rose-400">{errors.city.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label htmlFor="group-category" className="text-sm font-medium text-zinc-300">Category</label>
+              <Label htmlFor="group-category">Category</Label>
               <select id="group-category" {...register("category")} className="flex h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-sm px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all">
                 <option value="">General</option>
                 {CATEGORIES.filter((c) => c.value).map((c) => (
@@ -268,14 +270,14 @@ export function GroupsPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <label htmlFor="group-max" className="text-sm font-medium text-zinc-300">Max members</label>
+              <Label htmlFor="group-max">Max members</Label>
               <Input id="group-max" {...register("max_members")} type="number" placeholder="20" />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="group-desc" className="text-sm font-medium text-zinc-300">Description</label>
-            <textarea id="group-desc" {...register("description")} rows={2} placeholder="What's this group about?" className="flex w-full rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-sm px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-none" />
+            <Label htmlFor="group-desc">Description</Label>
+            <Textarea id="group-desc" {...register("description")} rows={2} placeholder="What's this group about?" />
           </div>
 
           <div className="flex gap-2 pt-1">
