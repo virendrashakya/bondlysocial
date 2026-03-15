@@ -48,10 +48,10 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 5173,
+    port: 8080,
     proxy: {
-      "/api": { target: "http://localhost:3001", changeOrigin: true },
-      "/cable": { target: "ws://localhost:3001", ws: true },
+      "/api": { target: "http://localhost:3000", changeOrigin: true },
+      "/cable": { target: "ws://localhost:3000", ws: true },
     },
   },
 });

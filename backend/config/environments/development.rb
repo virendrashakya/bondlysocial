@@ -26,17 +26,17 @@ Rails.application.configure do
   )
 
   # ActionCable
-  config.action_cable.url = "ws://localhost:3001/cable"
+  config.action_cable.url = "ws://localhost:3000/cable"
   config.action_cable.allowed_request_origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
+    "http://localhost:8080",
+    "http://127.0.0.1:8080"
   ]
 
   # URL options (needed by ActiveStorage blob URLs)
-  Rails.application.routes.default_url_options = { host: "localhost", port: 3001 }
+  Rails.application.routes.default_url_options = { host: "localhost", port: 3000 }
 
   # Mailer
   config.action_mailer.raise_delivery_errors = false
   config.action_mailer.perform_caching       = false
-  config.action_mailer.default_url_options   = { host: "localhost", port: 3001 }
+  config.action_mailer.default_url_options   = { host: "localhost", port: 3000 }
 end

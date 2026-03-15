@@ -3,7 +3,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { createConsumer } from "@rails/actioncable";
 import { useAuthStore } from "../store/authStore";
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3001/cable";
+const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000/cable";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cable: any = null;

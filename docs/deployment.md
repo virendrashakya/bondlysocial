@@ -17,8 +17,8 @@ cd infra && docker compose up -d
 docker compose exec api bundle exec rails db:create db:migrate
 
 # 5. Access
-#   API:      http://localhost:3001
-#   Frontend: http://localhost:5173
+#   API:      http://localhost:3000
+#   Frontend: http://localhost:8080
 ```
 
 ## AWS Production Setup

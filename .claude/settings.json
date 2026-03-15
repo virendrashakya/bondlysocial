@@ -3,9 +3,9 @@
     "allow": [
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" -u \"admin@intent.app:Admin123!\" http://localhost:3000/admin/users)",
       "Bash(bundle exec:*)",
-      "Bash(lsof -ti:3000,5173)",
+      "Bash(lsof -ti:3000,8080)",
       "Bash(npm run:*)",
-      "Bash(lsof -ti:5173)",
+      "Bash(lsof -ti:8080)",
       "Bash(find /Users/virendrashakya/Development/intent-dating-mvp -type f -name *.log)",
       "Bash(find /Users/virendrashakya/Development/intent-dating-mvp/frontend/src -type f -name *router* -o -name *App.tsx -o -name *App.ts)",
       "Bash(cat /Users/virendrashakya/Development/intent-dating-mvp/frontend/.env*)",
@@ -13,11 +13,14 @@
       "Bash(bin/rails db:migrate)",
       "Bash(bin/rails db:seed)",
       "Read(//private/tmp/**)",
-      "Bash(curl -sL -o /dev/null -w \"%{http_code}\" \"http://localhost:3001/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MjMsImV4cCI6IjIwMjYtMDMtMTVUMDA6MjI6NTguOTIzWiIsInB1ciI6ImJsb2JfaWQifX0=--b007fc8d096ef081a8bf61e399a18522b84d0891/Flow_IMG_20260304_095341_01_063.jpg\")",
-      "Bash(curl -s http://localhost:3001/api/v1/profiles/3 -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOjMsImlhdCI6MTc3MzUyODg5MCwiZXhwIjoxNzczNjE1MjkwLCJ0eXBlIjoiYWNjZXNzIn0.t3i9YkXFqMc4t5d2TC1a73GwLwk-a4irTlD1kWCjlX4\")",
+      "Bash(curl -sL -o /dev/null -w \"%{http_code}\" \"http://localhost:3000/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MjMsImV4cCI6IjIwMjYtMDMtMTVUMDA6MjI6NTguOTIzWiIsInB1ciI6ImJsb2JfaWQifX0=--b007fc8d096ef081a8bf61e399a18522b84d0891/Flow_IMG_20260304_095341_01_063.jpg\")",
+      "Bash(curl -s http://localhost:3000/api/v1/profiles/3 -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOjMsImlhdCI6MTc3MzUyODg5MCwiZXhwIjoxNzczNjE1MjkwLCJ0eXBlIjoiYWNjZXNzIn0.t3i9YkXFqMc4t5d2TC1a73GwLwk-a4irTlD1kWCjlX4\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[''''profile''''][''''data''''][''''attributes''''][''''avatar_url'''']\\)\")",
-      "Bash(curl -sv http://localhost:3001/api/v1/profiles/3 -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOjMsImlhdCI6MTc3MzUyODg5MCwiZXhwIjoxNzczNjE1MjkwLCJ0eXBlIjoiYWNjZXNzIn0.t3i9YkXFqMc4t5d2TC1a73GwLwk-a4irTlD1kWCjlX4\")",
-      "Bash(grep -r group /Users/virendrashakya/Development/intent-dating-mvp/frontend/src/hooks --include=*.ts --include=*.tsx)"
+      "Bash(curl -sv http://localhost:3000/api/v1/profiles/3 -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOjMsImlhdCI6MTc3MzUyODg5MCwiZXhwIjoxNzczNjE1MjkwLCJ0eXBlIjoiYWNjZXNzIn0.t3i9YkXFqMc4t5d2TC1a73GwLwk-a4irTlD1kWCjlX4\")",
+      "Bash(grep -r group /Users/virendrashakya/Development/intent-dating-mvp/frontend/src/hooks --include=*.ts --include=*.tsx)",
+      "Bash(lsof -ti:3000)",
+      "Bash(lsof -ti:5432)",
+      "Bash(lsof -ti:6379)"
     ]
   }
 }

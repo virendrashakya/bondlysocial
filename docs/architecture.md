@@ -18,7 +18,7 @@ with others who share compatible intent, location, and interests. It is NOT a sw
           │                             │
    ┌──────▼──────┐               ┌──────▼──────┐
    │  React SPA  │               │  Rails API  │
-   │  (Vite)     │               │  (port 3001)│
+   │  (Vite)     │               │  (port 3000)│
    └─────────────┘               └──────┬──────┘
                                         │
               ┌─────────────────────────┼──────────────────┐

@@ -8,7 +8,7 @@ export interface AppConfigValues {
   groups_enabled:      boolean;
 }
 
-const BASE = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:3001/api/v1";
+const BASE = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:3000/api/v1";
 
 export const appConfigService = {
   getPublic: (): Promise<AppConfigValues> =>
