@@ -29,7 +29,8 @@ Rails.application.configure do
   config.action_cable.url = "ws://localhost:3000/cable"
   config.action_cable.allowed_request_origins = [
     "http://localhost:8080",
-    "http://127.0.0.1:8080"
+    "http://127.0.0.1:8080",
+    /http:\/\/192\.168\.\d+\.\d+:\d+/
   ]
 
   # URL options (needed by ActiveStorage blob URLs)
