@@ -47,7 +47,7 @@ export function SignupPage() {
   const verifyMutation = useMutation({
     mutationFn: (otp: string) => authService.verifyOtp({ phone, otp }),
     onSuccess: (res) => {
-      setAuth(res.data.user.data.attributes, res.data.access_token, res.data.refresh_token);
+      setAuth({ ...res.data.user.data.attributes, id: Number(res.data.user.data.id) }, res.data.access_token, res.data.refresh_token);
       navigate("/onboarding");
     },
     onError: () => toast.error("Invalid or expired OTP"),

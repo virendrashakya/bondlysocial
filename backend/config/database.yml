@@ -10,6 +10,7 @@ default: &default
 development:
   <<: *default
   database: intentconnect_development
+  url: <%= ENV["DATABASE_URL"] %>
 
 test:
   <<: *default

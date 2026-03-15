@@ -138,11 +138,11 @@ export function DiscoverPage() {
   const score = p.match_score;
 
   return (
-    <div className="relative flex flex-col items-center min-h-[calc(100vh-4rem)] px-4 py-4">
+    <div className="relative flex flex-col items-center px-4 py-3">
       <AuroraBg />
 
       {/* Counter */}
-      <div className="w-full max-w-sm flex items-center justify-between mb-3">
+      <div className="w-full max-w-md flex items-center justify-between mb-2">
         <h1 className="text-lg font-bold text-white">Discover</h1>
         <span className="text-xs text-zinc-500">{remainingCount} left today</span>
       </div>
@@ -150,14 +150,14 @@ export function DiscoverPage() {
       {/* Card */}
       <div
         className={cn(
-          "relative w-full max-w-sm rounded-3xl overflow-hidden transition-all duration-300 shadow-2xl shadow-black/40",
+          "relative w-full max-w-md rounded-3xl overflow-hidden transition-all duration-300 shadow-2xl shadow-black/40",
           animating === "left" && "translate-x-[-120%] rotate-[-8deg] opacity-0",
           animating === "right" && "translate-x-[120%] rotate-[8deg] opacity-0",
           !animating && "translate-x-0 rotate-0 opacity-100"
         )}
       >
         {/* Full-screen photo */}
-        <div className={cn("relative", expanded ? "h-[55vh]" : "h-[68vh]")}>
+        <div className={cn("relative", expanded ? "h-[45vh]" : "h-[58vh]")}>
           {p.avatar_url ? (
             <img
               src={p.avatar_url}
@@ -298,7 +298,7 @@ export function DiscoverPage() {
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center justify-center gap-8 mt-6">
+      <div className="flex items-center justify-center gap-6 mt-4">
         {/* Pass */}
         <button
           onClick={handlePass}

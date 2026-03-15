@@ -1,0 +1,100 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: intentconnect
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+      POSTGRES_DB: intentconnect_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U intentconnect"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      bash -c "
+        bundle exec rails db:prepare &&
+        bundle exec rails server -b 0.0.0.0 -p 3001
+      "
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://intentconnect:${POSTGRES_PASSWORD:-devpassword}@db:5432/intentconnect_development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-devsecretkey_replace_in_production_000000000000000000000000000000000}
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_REGION: ${AWS_REGION:-ap-south-1}
+      S3_BUCKET: ${S3_BUCKET:-}
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - backend_bundle:/usr/local/bundle
+      - backend_storage:/app/storage
+    stdin_open: true
+    tty: true
+
+  sidekiq:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://intentconnect:${POSTGRES_PASSWORD:-devpassword}@db:5432/intentconnect_development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-devsecretkey_replace_in_production_000000000000000000000000000000000}
+    depends_on:
+      - api
+      - redis
+    volumes:
+      - ./backend:/app
+      - backend_bundle:/usr/local/bundle
+
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_API_BASE_URL: http://localhost:3001/api/v1
+      VITE_WS_URL: ws://localhost:3001/cable
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  postgres_data:
+  backend_bundle:
+  backend_storage:
+  frontend_node_modules:

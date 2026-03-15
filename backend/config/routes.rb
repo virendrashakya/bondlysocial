@@ -1,37 +1,4 @@
 Rails.application.routes.draw do
-  # ── Administrate admin panel (server-rendered UI at /admin) ──
-  # api_only strips new/edit routes; define them before the namespace.
-  %w[users profiles connections messages groups group_memberships
-     posts post_likes reports blocks notifications app_configs].each do |res|
-    singular = res.singularize
-    get "admin/#{res}/new",      to: "admin/#{res}#new",  as: "new_admin_#{singular}"
-    get "admin/#{res}/:id/edit", to: "admin/#{res}#edit", as: "edit_admin_#{singular}"
-  end
-
-  namespace :admin do
-    resources :users do
-      member do
-        patch :suspend
-        patch :unsuspend
-      end
-    end
-
-    resources :profiles
-    resources :connections
-    resources :messages
-    resources :groups
-    resources :group_memberships
-    resources :posts
-    resources :post_likes
-    resources :reports
-    resources :blocks
-    resources :notifications
-    resources :app_configs
-
-    get "dashboard", to: "dashboard#index", as: :dashboard
-    root to: "dashboard#index"
-  end
-
   mount ActionCable.server => "/cable"
 
   namespace :api do
@@ -93,6 +60,8 @@ Rails.application.routes.draw do
         member do
           post   :join
           delete :leave
+          get    :messages
+          post   :messages, action: :send_message
         end
       end
 
@@ -106,19 +75,6 @@ Rails.application.routes.draw do
       resources :notifications, only: [:index] do
         member  { patch :mark_read }
         collection { patch :read_all, to: "notifications#mark_all_read" }
-      end
-
-      # Admin
-      namespace :admin do
-        resources :reports, only: [:index] do
-          member { patch :review }
-        end
-        get   "users",                 to: "users#index"
-        patch "users/:id/suspend",     to: "users#suspend"
-        patch "users/:id/unsuspend",   to: "users#unsuspend"
-        get   "stats",                 to: "stats#index"
-        get   "app_configs",           to: "admin/app_configs#index"
-        patch "app_configs/:key",      to: "admin/app_configs#update"
       end
 
     end

@@ -29,7 +29,7 @@ export function LoginPage() {
     mutationFn: (d: FormData) => authService.login(d),
     onSuccess: (res) => {
       const { user, access_token, refresh_token } = res.data;
-      setAuth(user.data.attributes, access_token, refresh_token);
+      setAuth({ ...user.data.attributes, id: Number(user.data.id) }, access_token, refresh_token);
       const hasProfile = !!user.data.attributes.profile;
       navigate(hasProfile ? "/discover" : "/onboarding");
     },
@@ -95,7 +95,6 @@ export function LoginPage() {
         <GlassCard variant="brand" padding="sm" className="mt-4 text-xs text-amber-400 space-y-1">
           <p className="font-medium">Seed accounts (password: password123)</p>
           <p>priya.sharma@seed.com · arjun.mehta@seed.com · sneha.iyer@seed.com</p>
-          <p className="text-amber-500">Admin: admin@intentconnect.com / admin1234</p>
         </GlassCard>
       </div>
     </div>

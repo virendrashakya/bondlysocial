@@ -23,7 +23,7 @@ class Post < ApplicationRecord
     if media_files.attached?
       media_files.map do |file|
         {
-          url: Rails.application.routes.url_helpers.rails_blob_url(file, only_path: true),
+          url: Rails.application.routes.url_helpers.rails_blob_url(file),
           type: file.content_type.start_with?("video/") ? "video" : "image",
           id: file.id
         }
@@ -37,7 +37,7 @@ class Post < ApplicationRecord
 
   def media_url
     return nil unless media.attached?
-    Rails.application.routes.url_helpers.rails_blob_url(media, only_path: true)
+    Rails.application.routes.url_helpers.rails_blob_url(media)
   end
 
   def media_type

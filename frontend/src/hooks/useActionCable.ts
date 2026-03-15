@@ -58,6 +58,22 @@ export function useNotificationsChannel(onNotification: (data: any) => void) {
   }, []);
 }
 
+/** Subscribe to a group channel for real-time group chat messages. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useGroupChannel(groupId: number | null, onMessage: (data: any) => void) {
+  useEffect(() => {
+    if (!groupId) return;
+
+    const consumer = getCable();
+    const sub = consumer.subscriptions.create(
+      { channel: "GroupChannel", group_id: groupId },
+      { received: onMessage }
+    );
+
+    return () => sub.unsubscribe();
+  }, [groupId]);
+}
+
 export interface PresenceUpdate {
   type: "presence";
   user_id: number;

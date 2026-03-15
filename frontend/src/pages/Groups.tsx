@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, MapPin, X, Users, Search } from "lucide-react";
+import { Plus, MapPin, X, Users, Search, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -61,6 +62,7 @@ function GroupSkeleton() {
 }
 
 export function GroupsPage() {
+  const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
   const [cityFilter, setCityFilter] = useState("");
   const [category, setCategory]     = useState("");
@@ -185,8 +187,9 @@ export function GroupsPage() {
               key={g.id}
               variant="interactive"
               padding="default"
-              className="flex flex-col gap-3 group"
+              className="flex flex-col gap-3 group cursor-pointer"
               role="article"
+              onClick={() => navigate(`/groups/${g.id}`)}
             >
               {/* Top row */}
               <div className="flex items-start justify-between gap-2">
@@ -226,17 +229,30 @@ export function GroupsPage() {
                 </div>
               </div>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => join.mutate(Number(g.id))}
-                disabled={join.isPending || fill >= 100}
-                aria-label={`Join ${a.title}`}
-                className="mt-auto"
-              >
-                <i className="fa-solid fa-user-plus text-[11px]" aria-hidden="true" />
-                {fill >= 100 ? "Group full" : "Join"}
-              </Button>
+              {a.is_member ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/groups/${g.id}`); }}
+                  aria-label={`Open ${a.title}`}
+                  className="mt-auto gap-1.5 text-green-400 border-green-800/30"
+                >
+                  <Check size={13} />
+                  Joined
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); join.mutate(Number(g.id)); }}
+                  disabled={join.isPending || fill >= 100}
+                  aria-label={`Join ${a.title}`}
+                  className="mt-auto"
+                >
+                  <i className="fa-solid fa-user-plus text-[11px]" aria-hidden="true" />
+                  {fill >= 100 ? "Group full" : "Join"}
+                </Button>
+              )}
             </GlassCard>
           );
         })}

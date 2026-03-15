@@ -57,13 +57,6 @@ export const queryKeys = {
     all: ["preferences"] as const,
   },
 
-  // ── Admin ─────────────────────────────────────────────────
-  admin: {
-    users: (params?: Record<string, string | number | undefined>) => ["admin", "users", params] as const,
-    stats: () => ["admin", "stats"] as const,
-    reports: (status?: string) => ["admin", "reports", status] as const,
-  },
-
   // ── App Config ──────────────────────────────────────────────
   appConfig: {
     all: ["app-config"] as const,

@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, DragEvent } from "react";
-import { Heart, MessageCircle, Send, MoreHorizontal, ImageIcon, Video, X, ChevronLeft, ChevronRight, Lock, Globe, MapPin, Plus, ArrowLeft, Upload, Camera } from "lucide-react";
+import { Heart, MessageCircle, Send, MoreHorizontal, ImageIcon, Video, X, ChevronLeft, ChevronRight, Lock, Globe, MapPin, Plus, ArrowLeft, Upload, Camera, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
-import { usePosts, useLikePost, useCreatePost, useConnections } from "@/hooks/queries";
+import { usePosts, useLikePost, useDeletePost, useCreatePost, useConnections } from "@/hooks/queries";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -497,7 +497,11 @@ function CreatePostModal({ onClose }: { onClose: () => void }) {
 }
 
 // --- Post Card ---
-function PostCard({ post, onLike, onShare }: { post: Post; onLike: (id: number) => void; onShare?: (post: Post) => void }) {
+function PostCard({ post, onLike, onShare, onDelete, isOwner }: { post: Post; onLike: (id: number) => void; onShare?: (post: Post) => void; onDelete?: (id: number) => void; isOwner: boolean }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const media: MediaItem[] = post.media?.length > 0 ? post.media : (
     post.media_url ? [{ url: post.media_url, type: post.media_type || "image", id: 0 }] : []
   );
@@ -530,9 +534,46 @@ function PostCard({ post, onLike, onShare }: { post: Post; onLike: (id: number) 
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-600 hover:text-white" aria-label="More options">
-            <MoreHorizontal size={16} />
-          </Button>
+          {/* More options with dropdown */}
+          <div className="relative" ref={menuRef}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-zinc-600 hover:text-white"
+              aria-label="More options"
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <MoreHorizontal size={16} />
+            </Button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => { setMenuOpen(false); setConfirmDelete(false); }} />
+                <div className="absolute right-0 top-full mt-1 z-50 w-44 py-1 rounded-xl border border-white/[0.08] bg-zinc-900/95 backdrop-blur-md shadow-xl">
+                  {isOwner && !confirmDelete && (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-400 hover:bg-white/[0.06] transition-colors"
+                    >
+                      <Trash2 size={14} />
+                      Delete post
+                    </button>
+                  )}
+                  {isOwner && confirmDelete && (
+                    <button
+                      onClick={() => { onDelete?.(post.id); setMenuOpen(false); setConfirmDelete(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 font-semibold hover:bg-red-900/20 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                      Confirm delete
+                    </button>
+                  )}
+                  {!isOwner && (
+                    <p className="px-3 py-2.5 text-sm text-zinc-500">No actions available</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Caption */}
@@ -683,6 +724,34 @@ function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) 
   );
 }
 
+// --- Post Detail Modal (opens from grid tap) ---
+function PostDetailModal({ post, onClose, onLike, onDelete, onShare }: {
+  post: Post;
+  onClose: () => void;
+  onLike: (id: number) => void;
+  onDelete: (id: number) => void;
+  onShare: (post: Post) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-end px-4 pt-3">
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-zinc-400 hover:text-white">
+            <X size={20} />
+          </Button>
+        </div>
+        <PostCard
+          post={post}
+          onLike={onLike}
+          onShare={onShare}
+          onDelete={onDelete}
+          isOwner={post.is_own}
+        />
+      </div>
+    </div>
+  );
+}
+
 // --- Post Feed ---
 interface PostFeedProps {
   userId?: number;
@@ -693,9 +762,11 @@ interface PostFeedProps {
 export function PostFeed({ userId, showCreateBox = true, gridView = false }: PostFeedProps) {
   const [sharePost, setSharePost] = useState<Post | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const { data, isLoading } = usePosts(userId);
   const like = useLikePost();
+  const deletePost = useDeletePost();
 
   const posts: Post[] = data ?? [];
 
@@ -726,10 +797,10 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
   if (gridView) {
     return (
       <>
-        <div className="grid grid-cols-3 gap-0.5" aria-label="Media gallery">
+        <div className="grid grid-cols-3 gap-0.5 rounded-lg overflow-hidden" aria-label="Media gallery">
           {posts.length === 0 && (
             <div className="col-span-3 flex flex-col items-center justify-center py-16 text-center">
-              <i className="fa-regular fa-image text-4xl text-zinc-700 mb-3" aria-hidden="true" />
+              <ImageIcon size={32} className="text-zinc-700 mb-3" />
               <p className="text-sm text-zinc-500">No posts yet</p>
             </div>
           )}
@@ -738,6 +809,7 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
             return (
               <button
                 key={post.id}
+                onClick={() => setSelectedPost(post)}
                 className="aspect-square relative group overflow-hidden bg-white/[0.04]"
                 aria-label={`Post: ${post.caption?.slice(0, 40) || "Media"}`}
               >
@@ -753,8 +825,8 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
                   </div>
                 )}
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                {/* Hover / tap overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity flex items-center justify-center gap-4">
                   <span className="flex items-center gap-1 text-white text-sm font-semibold">
                     <Heart size={16} fill="white" /> {post.likes_count}
                   </span>
@@ -773,6 +845,17 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
             );
           })}
         </div>
+
+        {/* Post detail modal from grid tap */}
+        {selectedPost && (
+          <PostDetailModal
+            post={selectedPost}
+            onClose={() => setSelectedPost(null)}
+            onLike={(id) => like.mutate(id)}
+            onDelete={(id) => { deletePost.mutate(id); setSelectedPost(null); }}
+            onShare={(p) => { setSelectedPost(null); setSharePost(p); }}
+          />
+        )}
         {sharePost && <SharePostModal post={sharePost} onClose={() => setSharePost(null)} />}
       </>
     );
@@ -785,13 +868,20 @@ export function PostFeed({ userId, showCreateBox = true, gridView = false }: Pos
 
       {posts.length === 0 && !isLoading && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <i className="fa-regular fa-image text-4xl text-zinc-700 mb-3" aria-hidden="true" />
+          <ImageIcon size={32} className="text-zinc-700 mb-3" />
           <p className="text-sm text-zinc-500">No posts yet. Share your first moment!</p>
         </div>
       )}
 
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} onLike={(id) => like.mutate(id)} onShare={(p) => setSharePost(p)} />
+        <PostCard
+          key={post.id}
+          post={post}
+          onLike={(id) => like.mutate(id)}
+          onShare={(p) => setSharePost(p)}
+          onDelete={(id) => deletePost.mutate(id)}
+          isOwner={post.is_own}
+        />
       ))}
 
       {sharePost && <SharePostModal post={sharePost} onClose={() => setSharePost(null)} />}

@@ -15,7 +15,7 @@ export function useMyProfile() {
       profilesService
         .getProfile(user!.id)
         .then((r) => r.data.profile.data?.attributes as Profile),
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 }
 

@@ -12,8 +12,9 @@ import { AnnouncementBanner } from "@/components/shared/AnnouncementBanner";
 import { ProfileCompletion } from "@/components/shared/ProfileCompletion";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { useMyProfile } from "@/hooks/queries";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 const NAV = [
@@ -34,6 +35,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate          = useNavigate();
   const location          = useLocation();
   const appConfig         = useAppConfig();
+  const { data: myProfile } = useMyProfile();
   const { setOnline, setOffline, updateLastActive } = usePresenceStore();
 
   // Subscribe to presence channel for online status
@@ -78,6 +80,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="px-4 py-3 border-b border-white/[0.08] flex items-center gap-3">
           <div className="relative">
             <Avatar className="h-9 w-9 text-sm">
+              {myProfile?.avatar_url && (
+                <AvatarImage src={myProfile.avatar_url} alt={user.profile?.name ?? "Profile"} />
+              )}
               <AvatarFallback>
                 {user.profile?.name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
               </AvatarFallback>
@@ -98,7 +103,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Profile completion */}
-      <ProfileCompletion profile={user?.profile} verified={user?.selfie_verified} isAdmin={user?.role === "admin"} />
+      <ProfileCompletion profile={myProfile ?? user?.profile} verified={user?.selfie_verified} />
 
       {/* Nav */}
       <nav className="flex-1 px-2.5 py-2.5 space-y-0.5 overflow-y-auto" aria-label="Main navigation">
@@ -129,23 +134,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </NavLink>
         ))}
 
-        {user?.role === "admin" && (
-          <NavLink
-            to="/admin"
-            onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mt-1.5 border-t border-white/[0.08] pt-3",
-                isActive
-                  ? "bg-rose-950/40 text-rose-400 border-rose-800/30"
-                  : "text-rose-500/70 hover:bg-rose-950/30 hover:text-rose-400"
-              )
-            }
-          >
-            <ShieldCheck size={17} />
-            Admin
-          </NavLink>
-        )}
       </nav>
 
       {/* Logout */}
@@ -177,7 +165,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {open && (
           <div className="fixed inset-0 z-50 flex md:hidden animate-fade-in">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-            <div className="relative z-10 flex flex-col w-[220px] bg-white/[0.03] backdrop-blur-2xl border-r border-white/[0.08] animate-slide-up">
+            <div className="relative z-10 flex flex-col w-[280px] h-full bg-[rgba(10,10,10,0.97)] backdrop-blur-2xl border-r border-white/[0.08] animate-slide-up">
               <SidebarContent />
             </div>
           </div>
@@ -208,7 +196,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               "flex-1 min-h-0 animate-page-enter",
               location.pathname.startsWith("/chat/")
                 ? "overflow-hidden"
-                : "overflow-y-auto pb-16 md:pb-0"
+                : "overflow-y-auto overscroll-none pb-20 md:pb-0"
             )}
           >
             {children}

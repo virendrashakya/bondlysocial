@@ -74,7 +74,7 @@ export function SettingsPage() {
 
       {/* Tab bar */}
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full mb-6" aria-label="Settings sections">
+        <TabsList className="w-full mb-6 overflow-x-auto scrollbar-hide" aria-label="Settings sections">
           <TabsTrigger value="profile">
             <i className="fa-solid fa-user text-[10px]" aria-hidden="true" />
             Profile

@@ -7,7 +7,6 @@ import { useAppConfig } from "./hooks/useAppConfig";
 
 // Layout
 import { AppLayout }     from "./components/layout/AppLayout";
-import { AdminLayout }   from "./pages/admin/AdminLayout";
 
 // Public pages
 import { LoginPage }     from "./pages/Login";
@@ -23,18 +22,13 @@ import { ConnectionsPage }    from "./pages/Connections";
 import { ChatPage }           from "./pages/Chat";
 import { MessagesPage }      from "./pages/Messages";
 import { GroupsPage }         from "./pages/Groups";
+import { GroupDetailPage }    from "./pages/GroupDetail";
 import { NotificationsPage }  from "./pages/Notifications";
 import { SettingsPage }       from "./pages/Settings";
 import { BlockedUsersPage }  from "./pages/BlockedUsers";
 import { NearbyPage }         from "./pages/Nearby";
 import { FeedPage }          from "./pages/Feed";
 import { UserPostsPage }     from "./pages/UserPosts";
-
-// Admin pages
-import { AdminOverviewPage }  from "./pages/admin/AdminOverview";
-import { AdminReportsPage }   from "./pages/admin/AdminReports";
-import { AdminUsersPage }     from "./pages/admin/AdminUsers";
-import { AdminConfigPage }    from "./pages/admin/AdminConfig";
 
 // Error pages
 import { NotFoundPage }    from "./pages/NotFound";
@@ -71,13 +65,6 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const user = useAuthStore((s) => s.user);
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== "admin") return <Navigate to="/discover" replace />;
-  return <>{children}</>;
-}
-
 function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const appConfig = useAppConfig();
   if (appConfig.maintenance_mode) return <MaintenancePage />;
@@ -105,15 +92,10 @@ function AppRoutes() {
         <Route path="/chat/:id"      element={<RequireAuth><AppLayout><ChatPage /></AppLayout></RequireAuth>} />
         <Route path="/chat"          element={<RequireAuth><AppLayout><MessagesPage /></AppLayout></RequireAuth>} />
         <Route path="/groups"        element={<RequireAuth><AppLayout><GroupsPage /></AppLayout></RequireAuth>} />
+        <Route path="/groups/:id"    element={<RequireAuth><AppLayout><GroupDetailPage /></AppLayout></RequireAuth>} />
         <Route path="/notifications" element={<RequireAuth><AppLayout><NotificationsPage /></AppLayout></RequireAuth>} />
         <Route path="/settings"      element={<RequireAuth><AppLayout><SettingsPage /></AppLayout></RequireAuth>} />
         <Route path="/blocked-users" element={<RequireAuth><AppLayout><BlockedUsersPage /></AppLayout></RequireAuth>} />
-
-        {/* ── Admin ── */}
-        <Route path="/admin"         element={<RequireAdmin><AdminLayout><AdminOverviewPage /></AdminLayout></RequireAdmin>} />
-        <Route path="/admin/reports" element={<RequireAdmin><AdminLayout><AdminReportsPage /></AdminLayout></RequireAdmin>} />
-        <Route path="/admin/users"   element={<RequireAdmin><AdminLayout><AdminUsersPage /></AdminLayout></RequireAdmin>} />
-        <Route path="/admin/config"  element={<RequireAdmin><AdminLayout><AdminConfigPage /></AdminLayout></RequireAdmin>} />
 
         {/* ── Error / Default ── */}
         <Route path="/500" element={<ServerErrorPage />} />

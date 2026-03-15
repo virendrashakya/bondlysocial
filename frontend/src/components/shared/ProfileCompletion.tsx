@@ -8,7 +8,6 @@ interface Props {
     languages_spoken?: string[];
   };
   verified?: boolean;
-  isAdmin?: boolean;
 }
 
 function calc(profile?: Props["profile"], verified?: boolean): number {
@@ -27,8 +26,7 @@ function calc(profile?: Props["profile"], verified?: boolean): number {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
 
-export function ProfileCompletion({ profile, verified, isAdmin }: Props) {
-  if (isAdmin) return null;
+export function ProfileCompletion({ profile, verified }: Props) {
   const pct = calc(profile, verified);
   if (pct >= 100) return null;
 

@@ -1,18 +1,19 @@
 module Api
   module V1
     class GroupsController < BaseController
-      before_action :set_group, only: [:show, :join, :leave]
+      before_action :set_group, only: [:show, :join, :leave, :messages, :send_message]
 
       # GET /groups
       def index
-        groups = Group.active.order(created_at: :desc).then { |s| paginate(s) }
+        groups = Group.active.includes(:group_memberships, creator: :profile).order(created_at: :desc)
         groups = groups.in_city(params[:city]) if params[:city].present?
-        render json: { groups: GroupSerializer.new(groups).serializable_hash }
+        groups = paginate(groups)
+        render json: { groups: GroupSerializer.new(groups, params: { current_user: current_user }).serializable_hash }
       end
 
       # GET /groups/:id
       def show
-        render json: { group: GroupSerializer.new(@group).serializable_hash }
+        render json: { group: GroupSerializer.new(@group, params: { current_user: current_user }).serializable_hash }
       end
 
       # POST /groups
@@ -20,9 +21,8 @@ module Api
         group = current_user.created_groups.build(group_params)
 
         if group.save
-          # Auto-join creator as admin
           group.group_memberships.create!(user: current_user, role: "admin")
-          render json: { group: GroupSerializer.new(group).serializable_hash }, status: :created
+          render json: { group: GroupSerializer.new(group, params: { current_user: current_user }).serializable_hash }, status: :created
         else
           render json: { errors: group.errors.full_messages }, status: :unprocessable_entity
         end
@@ -34,7 +34,7 @@ module Api
         return render json: { error: "Already a member" }, status: :conflict if @group.member?(current_user)
 
         @group.group_memberships.create!(user: current_user)
-        head :created
+        render json: { group: GroupSerializer.new(@group.reload, params: { current_user: current_user }).serializable_hash }, status: :created
       end
 
       # DELETE /groups/:id/leave
@@ -46,6 +46,35 @@ module Api
         head :no_content
       end
 
+      # GET /groups/:id/messages
+      def messages
+        return render json: { error: "Not a member" }, status: :forbidden unless @group.member?(current_user)
+
+        msgs = @group.group_messages
+                     .includes(user: :profile)
+                     .order(created_at: :asc)
+                     .last(100)
+
+        render json: {
+          messages: msgs.map { |m| serialize_message(m) }
+        }
+      end
+
+      # POST /groups/:id/messages
+      def send_message
+        return render json: { error: "Not a member" }, status: :forbidden unless @group.member?(current_user)
+
+        msg = @group.group_messages.build(user: current_user, body: params[:body])
+
+        if msg.save
+          payload = serialize_message(msg)
+          ActionCable.server.broadcast("group_#{@group.id}", { type: "message", message: payload })
+          render json: { message: payload }, status: :created
+        else
+          render json: { errors: msg.errors.full_messages }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def set_group
@@ -53,7 +82,19 @@ module Api
       end
 
       def group_params
-        params.require(:group).permit(:title, :description, :city, :max_members)
+        params.require(:group).permit(:title, :description, :city, :category, :max_members)
+      end
+
+      def serialize_message(msg)
+        profile = msg.user.profile
+        {
+          id: msg.id,
+          body: msg.body,
+          user_id: msg.user_id,
+          user_name: profile&.name || msg.user.email,
+          user_avatar: profile&.avatar_url,
+          created_at: msg.created_at
+        }
       end
     end
   end

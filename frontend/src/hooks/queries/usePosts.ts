@@ -27,6 +27,20 @@ export function useLikePost() {
   });
 }
 
+/** Mutation: delete a post. */
+export function useDeletePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (postId: number) => api.delete(`/posts/${postId}`),
+    onSuccess: () => {
+      toast.success("Post deleted");
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+    },
+    onError: () => toast.error("Failed to delete post"),
+  });
+}
+
 /** Mutation: create a new post with media files. */
 export function useCreatePost(onSuccess?: () => void) {
   const queryClient = useQueryClient();

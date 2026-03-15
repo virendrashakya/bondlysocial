@@ -36,6 +36,18 @@
   }
   h1, h2, h3, h4, h5, h6 { color: #ffffff; }
 
+  /* Prevent overscroll bounce on iOS */
+  html { overscroll-behavior: none; }
+
+  /* Smooth scrolling for in-page navigation */
+  html { scroll-behavior: smooth; }
+
+  /* Prevent text size adjustment on orientation change */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* Better touch targets - prevent double-tap zoom */
+  html { touch-action: manipulation; }
+
   /* WCAG 2.1 AA – visible focus ring for keyboard users */
   :focus-visible {
     outline: 2px solid #FF3D6B;
@@ -78,8 +90,8 @@
 
   /* Minimum tap target size for WCAG 2.5.5 */
   button, [role="button"], a {
-    min-height: 36px;
-    min-width: 36px;
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 
@@ -170,4 +182,10 @@
 
   /* Text balance for headings */
   .text-balance { text-wrap: balance; }
+
+  /* Prevent pull-to-refresh on mobile when scrolling up */
+  .overscroll-none { overscroll-behavior: none; }
+
+  /* Momentum scrolling for iOS */
+  .scroll-touch { -webkit-overflow-scrolling: touch; }
 }

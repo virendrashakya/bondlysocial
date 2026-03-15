@@ -1,0 +1,12 @@
+.git
+log/*
+tmp/*
+storage/*
+node_modules
+.bundle
+vendor/bundle
+*.swp
+*.swo
+.env
+.env.*
+!.env.example

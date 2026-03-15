@@ -137,7 +137,7 @@ export function ChatDetailsDrawer({
               className="mt-3"
               onClick={() => {
                 onClose();
-                navigate(`/profile/${otherUser?.id}`);
+                if (otherUser?.id) navigate(`/profile/${otherUser.id}`);
               }}
             >
               <User size={14} /> View Profile
@@ -252,7 +252,7 @@ export function ChatDetailsDrawer({
               className="w-full justify-start"
               onClick={() => {
                 onClose();
-                navigate(`/profile/${otherUser?.id}/posts`);
+                if (otherUser?.id) navigate(`/profile/${otherUser.id}/posts`);
               }}
             >
               <Image size={14} /> View {otherUserName}'s Posts

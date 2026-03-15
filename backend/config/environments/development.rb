@@ -32,6 +32,9 @@ Rails.application.configure do
     "http://127.0.0.1:5173"
   ]
 
+  # URL options (needed by ActiveStorage blob URLs)
+  Rails.application.routes.default_url_options = { host: "localhost", port: 3001 }
+
   # Mailer
   config.action_mailer.raise_delivery_errors = false
   config.action_mailer.perform_caching       = false

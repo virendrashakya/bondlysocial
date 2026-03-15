@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_16_200001) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_16_200002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -83,6 +83,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_16_200001) do
     t.index ["group_id", "user_id"], name: "index_group_memberships_on_group_id_and_user_id", unique: true
     t.index ["group_id"], name: "index_group_memberships_on_group_id"
     t.index ["user_id"], name: "index_group_memberships_on_user_id"
+  end
+
+  create_table "group_messages", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.bigint "user_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id", "created_at"], name: "index_group_messages_on_group_id_and_created_at"
+    t.index ["group_id"], name: "index_group_messages_on_group_id"
+    t.index ["user_id"], name: "index_group_messages_on_user_id"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -251,6 +262,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_16_200001) do
   add_foreign_key "connections", "users", column: "requester_id"
   add_foreign_key "group_memberships", "groups"
   add_foreign_key "group_memberships", "users"
+  add_foreign_key "group_messages", "groups"
+  add_foreign_key "group_messages", "users"
   add_foreign_key "groups", "users", column: "creator_id"
   add_foreign_key "message_reactions", "messages"
   add_foreign_key "message_reactions", "users"

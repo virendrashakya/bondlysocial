@@ -1,4 +1,3 @@
-import { api } from "../lib/api";
 import axios from "axios";
 
 export interface AppConfigValues {
@@ -15,7 +14,4 @@ export const appConfigService = {
   getPublic: (): Promise<AppConfigValues> =>
     axios.get(`${BASE}/app_config`).then((r) => r.data.config),
 
-  adminGetAll: () => api.get("/admin/app_configs"),
-  adminUpdate: (key: string, value: string, value_type: string) =>
-    api.patch(`/admin/app_configs/${key}`, { app_config: { value, value_type } }),
 };

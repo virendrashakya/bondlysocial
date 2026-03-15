@@ -4,4 +4,4 @@ export type { OtherUser, ConnectionAttributes } from "./connection.types";
 export type { ReferencedPost, MessageAttributes, MessageReaction, BlockedUser, PrivacySettings, NotificationPreferences, UserPreferences } from "./message.types";
 export type { NotificationAttributes } from "./notification.types";
 export type { MediaItem, Post } from "./post.types";
-export type { GroupAttributes } from "./group.types";
+export type { GroupAttributes, GroupMember, GroupMessage } from "./group.types";

@@ -57,6 +57,10 @@
 # Coverage
 /frontend/coverage/
 
+# Docker / root env
+.env
+!.env.example
+
 # OS / Editor
 /.DS_Store
 *.swp
