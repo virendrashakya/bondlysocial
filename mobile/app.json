@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "IntentConnect",
+    "slug": "intentconnect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "intentconnect",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.intentconnect.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "IntentConnect uses your location to find people nearby.",
+        "NSCameraUsageDescription": "IntentConnect needs camera access for profile photos.",
+        "NSPhotoLibraryUsageDescription": "IntentConnect needs photo library access to share photos."
+      }
+    },
+    "android": {
+      "package": "com.intentconnect.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0A0A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-location"
+    ],
+    "extra": {
+      "apiBaseUrl": "http://192.168.29.207:3000/api/v1",
+      "wsUrl": "ws://192.168.29.207:3000/cable"
+    }
+  }
+}

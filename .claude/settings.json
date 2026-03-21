@@ -20,7 +20,11 @@
       "Bash(grep -r group /Users/virendrashakya/Development/intent-dating-mvp/frontend/src/hooks --include=*.ts --include=*.tsx)",
       "Bash(lsof -ti:3000)",
       "Bash(lsof -ti:5432)",
-      "Bash(lsof -ti:6379)"
+      "Bash(lsof -ti:6379)",
+      "Bash(find /Users/virendrashakya/Development/intent-dating-mvp/backend/app/serializers -type f -name *.rb)",
+      "Bash(find /Users/virendrashakya/Development/intent-dating-mvp/backend/app/channels -type f -name *.rb)",
+      "Bash(head -20 /Users/virendrashakya/Development/intent-dating-mvp/frontend/src/services/*.ts)",
+      "Bash(find /Users/virendrashakya/Development/intent-dating-mvp/backend/app/services -type f -name *.rb)"
     ]
   }
 }
