@@ -150,6 +150,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </>
   );
 
+  // Hide generic mobile layout chrome when inside a specific chat conversation
+  const isChatDetail = Boolean(location.pathname.match(/^\/chat\/\d+$/));
+
   return (
     <div className="flex flex-col h-screen bg-dark-bg overflow-hidden">
       {/* Global announcement banner */}
@@ -174,20 +177,22 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Main content */}
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Mobile topbar */}
-          <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
-            <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="h-9 w-9 text-zinc-400 hover:text-white">
-              <Menu size={20} />
-            </Button>
-            <span className="font-bold text-brand text-base tracking-tight">IntentConnect</span>
-            <NavLink to="/notifications" className="relative text-zinc-400 hover:text-white transition-colors">
-              <Bell size={20} />
-              {unread > 0 && (
-                <Badge variant="brand" size="sm" className="absolute -top-1 -right-1 min-w-[1rem] h-4 px-1 flex items-center justify-center text-[9px] font-bold">
-                  {unread > 9 ? "9+" : unread}
-                </Badge>
-              )}
-            </NavLink>
-          </div>
+          {!isChatDetail && (
+            <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
+              <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="h-9 w-9 text-zinc-400 hover:text-white">
+                <Menu size={20} />
+              </Button>
+              <span className="font-bold text-brand text-base tracking-tight">IntentConnect</span>
+              <NavLink to="/notifications" className="relative text-zinc-400 hover:text-white transition-colors">
+                <Bell size={20} />
+                {unread > 0 && (
+                  <Badge variant="brand" size="sm" className="absolute -top-1 -right-1 min-w-[1rem] h-4 px-1 flex items-center justify-center text-[9px] font-bold">
+                    {unread > 9 ? "9+" : unread}
+                  </Badge>
+                )}
+              </NavLink>
+            </div>
+          )}
 
           <main
             id="main-content"
@@ -205,7 +210,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile bottom nav */}
-      <BottomNav unread={unread} />
+      {!isChatDetail && <BottomNav unread={unread} />}
     </div>
   );
 }

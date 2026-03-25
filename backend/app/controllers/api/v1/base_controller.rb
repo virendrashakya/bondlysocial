@@ -65,8 +65,8 @@ module Api
 
       def paginate(scope)
         page     = (params[:page] || 1).to_i
-        per_page = [[params[:per_page].to_i, 1].max, 50].min
-        per_page = 20 if per_page.zero?
+        per_page = params[:per_page] ? params[:per_page].to_i : 20
+        per_page = [[per_page, 1].max, 50].min
         scope.offset((page - 1) * per_page).limit(per_page)
       end
     end
