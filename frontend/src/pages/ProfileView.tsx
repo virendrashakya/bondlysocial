@@ -67,31 +67,30 @@ export function ProfileViewPage() {
   const p = data.attributes;
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6">
-      {/* Back */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="mb-4 text-zinc-500 hover:text-white"
-      >
-        <ArrowLeft size={16} /> Back
-      </Button>
-
-      <GlassCard padding="none" className="overflow-hidden">
-        {/* Avatar */}
+    <div className="max-w-lg mx-auto md:px-4 md:py-6">
+      <GlassCard padding="none" className="overflow-hidden md:rounded-2xl rounded-none">
+        {/* Avatar — full width, natural height */}
         <div className="relative">
-          <div className="h-56 bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center">
-            {p.avatar_url ? (
-              <img src={p.avatar_url} alt={p.name} className="w-full h-full object-cover" />
-            ) : (
+          {p.avatar_url ? (
+            <img src={p.avatar_url} alt={p.name} className="w-full object-cover max-h-[80vh]" />
+          ) : (
+            <div className="h-64 bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center">
               <Avatar className="w-24 h-24 text-4xl">
                 <AvatarFallback>{p.name?.[0]}</AvatarFallback>
               </Avatar>
-            )}
-          </div>
+            </div>
+          )}
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+          {/* Floating back button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+          >
+            <ArrowLeft size={18} />
+          </button>
           {p.verified && (
-            <Badge variant="success" className="absolute top-3 right-3 bg-dark-card/90 backdrop-blur-sm">
+            <Badge variant="success" className="absolute top-4 right-4 bg-dark-card/90 backdrop-blur-sm">
               <ShieldCheck size={12} /> Verified
             </Badge>
           )}

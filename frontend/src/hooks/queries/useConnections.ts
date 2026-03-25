@@ -51,3 +51,28 @@ export function useRejectConnection() {
     },
   });
 }
+
+/** Fetch sent (outbound) connection requests. */
+export function useSentRequests() {
+  return useQuery({
+    queryKey: queryKeys.connections.sent(),
+    queryFn: () =>
+      connectionsService
+        .getSent()
+        .then((r) => (r.data.sent?.data ?? []) as JsonApiResource<ConnectionAttributes>[]),
+  });
+}
+
+/** Mutation: cancel a sent connection request. */
+export function useCancelSent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => connectionsService.cancelSent(id),
+    onSuccess: () => {
+      toast.success("Request cancelled");
+      queryClient.invalidateQueries({ queryKey: queryKeys.connections.sent() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
+    },
+  });
+}

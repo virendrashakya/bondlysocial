@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { authService } from "@/services/auth.service";
 import { usePresenceChannel } from "@/hooks/useActionCable";
 import { AnnouncementBanner } from "@/components/shared/AnnouncementBanner";
+import { SubscriptionModal } from "@/components/shared/SubscriptionModal";
 import { ProfileCompletion } from "@/components/shared/ProfileCompletion";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { useAppConfig } from "@/hooks/useAppConfig";
@@ -105,6 +106,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Profile completion */}
       <ProfileCompletion profile={myProfile ?? user?.profile} verified={user?.selfie_verified} />
 
+      {/* Upgrade to Premium Button */}
+      {user?.profile?.gender === "male" && user?.subscription_tier !== "premium" && (
+        <div className="px-4 py-3 border-b border-white/[0.08]">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("paywall:triggered"))}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/30 text-amber-500 text-sm font-semibold py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(245,158,11,0.1)]"
+          >
+            <i className="fa-solid fa-crown" />
+            Get Premium
+          </button>
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="flex-1 px-2.5 py-2.5 space-y-0.5 overflow-y-auto" aria-label="Main navigation">
         {NAV.map(({ to, faIcon, label }) => (
@@ -150,13 +164,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </>
   );
 
-  // Hide generic mobile layout chrome when inside a specific chat conversation
-  const isChatDetail = Boolean(location.pathname.match(/^\/chat\/\d+$/));
+  // Hide generic mobile layout chrome when inside a chat or profile detail view
+  const isImmersive = Boolean(location.pathname.match(/^\/(chat|profile)\/\d+$/));
 
   return (
     <div className="flex flex-col h-screen bg-dark-bg overflow-hidden">
       {/* Global announcement banner */}
       <AnnouncementBanner text={appConfig.announcement_banner} />
+      
+      {/* Global Subscription Paywall */}
+      <SubscriptionModal />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Desktop sidebar */}
@@ -177,7 +194,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Main content */}
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Mobile topbar */}
-          {!isChatDetail && (
+          {!isImmersive && (
             <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
               <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="h-9 w-9 text-zinc-400 hover:text-white">
                 <Menu size={20} />
@@ -210,7 +227,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile bottom nav */}
-      {!isChatDetail && <BottomNav unread={unread} />}
+      {!isImmersive && <BottomNav unread={unread} />}
     </div>
   );
 }

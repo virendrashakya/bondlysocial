@@ -19,6 +19,7 @@ export const queryKeys = {
   connections: {
     all: ["connections"] as const,
     requests: () => [...queryKeys.connections.all, "requests"] as const,
+    sent: () => [...queryKeys.connections.all, "sent"] as const,
   },
 
   // ── Messages ────────────────────────────────────────────────

@@ -72,8 +72,8 @@ export function ChatDetailsDrawer({
   const totalMessages = messages.length;
 
   const handleBlock = () => {
-    if (!otherUser?.id) return;
-    blockUser.mutate(otherUser.id, {
+    if (!otherUser?.user_id) return;
+    blockUser.mutate(otherUser.user_id, {
       onSuccess: () => {
         setShowBlockConfirm(false);
         onClose();
@@ -83,9 +83,9 @@ export function ChatDetailsDrawer({
   };
 
   const handleReport = () => {
-    if (!otherUser?.id) return;
+    if (!otherUser?.user_id) return;
     reportUser.mutate(
-      { reportedId: otherUser.id, reason: reportReason, details: reportDetails || undefined },
+      { reportedId: otherUser.user_id, reason: reportReason, details: reportDetails || undefined },
       { onSuccess: () => { setShowReportDialog(false); setReportDetails(""); } }
     );
   };
@@ -137,7 +137,7 @@ export function ChatDetailsDrawer({
               className="mt-3"
               onClick={() => {
                 onClose();
-                if (otherUser?.id) navigate(`/profile/${otherUser.id}`);
+                if (otherUser?.user_id) navigate(`/profile/${otherUser.user_id}`);
               }}
             >
               <User size={14} /> View Profile
@@ -252,7 +252,7 @@ export function ChatDetailsDrawer({
               className="w-full justify-start"
               onClick={() => {
                 onClose();
-                if (otherUser?.id) navigate(`/profile/${otherUser.id}/posts`);
+                if (otherUser?.user_id) navigate(`/profile/${otherUser.user_id}/posts`);
               }}
             >
               <Image size={14} /> View {otherUserName}'s Posts

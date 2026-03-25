@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_16_200002) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_25_224733) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -248,6 +248,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_16_200002) do
     t.datetime "updated_at", null: false
     t.jsonb "privacy_settings", default: {}, null: false
     t.jsonb "notification_preferences", default: {}, null: false
+    t.string "subscription_tier", default: "free", null: false
+    t.integer "daily_views_count", default: 0, null: false
+    t.date "last_viewed_date"
+    t.jsonb "discovery_preferences", default: {}, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["role"], name: "index_users_on_role"

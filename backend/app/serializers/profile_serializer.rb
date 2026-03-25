@@ -3,6 +3,10 @@ class ProfileSerializer
 
   attributes :name, :age, :gender, :city, :occupation, :bio, :intent, :interests, :hidden
 
+  attribute :user_id do |profile|
+    profile.user_id
+  end
+
   # Extended attributes (always visible)
   attributes :cultural_background, :cultural_background_custom,
              :languages_spoken, :appearance_tags,

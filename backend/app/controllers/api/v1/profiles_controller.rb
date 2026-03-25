@@ -2,6 +2,7 @@ module Api
   module V1
     class ProfilesController < BaseController
       before_action :set_profile, only: [:show]
+      before_action :check_daily_limit, only: [:show]
 
       # GET /profiles/suggestions
       def suggestions
@@ -114,6 +115,22 @@ module Api
           :show_height, :show_body_type, :show_online_status,
           interests: [], languages_spoken: [], appearance_tags: []
         )
+      end
+
+      def check_daily_limit
+        return if current_user.profile&.gender == "female"
+        return if current_user.subscription_tier == "premium"
+
+        today = Date.today
+        if current_user.last_viewed_date != today
+          current_user.update!(last_viewed_date: today, daily_views_count: 0)
+        end
+
+        if current_user.daily_views_count >= 10
+          render json: { error: "Daily profile view limit reached", code: "limit_reached" }, status: :payment_required
+        else
+          current_user.increment!(:daily_views_count)
+        end
       end
     end
   end

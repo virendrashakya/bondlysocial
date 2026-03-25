@@ -7,16 +7,19 @@ export interface AuthUser {
   status: string;
   phone_verified: boolean;
   selfie_verified: boolean;
+  subscription_tier?: string;
   profile?: {
     name: string;
     city: string;
     intent: string;
+    gender?: string;
   };
 }
 
 /** Full profile returned from GET /profiles/:id */
 export interface Profile {
   id: number;
+  user_id: number;
   name: string;
   age: number;
   gender: string;

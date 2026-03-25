@@ -1,6 +1,6 @@
 class UserMatcherService
   CACHE_TTL       = 24.hours
-  RESULTS_PER_DAY = 10
+  RESULTS_PER_DAY = 50
 
   SCORE_CITY      = 40
   SCORE_INTENT    = 30
@@ -17,12 +17,7 @@ class UserMatcherService
   end
 
   def call
-    cache_key = "matches:user:#{@user.id}:#{Date.current}"
-    cached    = Rails.cache.read(cache_key)
-    return cached if cached
-
     results = compute_matches
-    Rails.cache.write(cache_key, results, expires_in: CACHE_TTL)
     results
   end
 
@@ -45,13 +40,38 @@ class UserMatcherService
                    connected_user_ids +
                    [@user.id]
 
-    Profile
+    scope = Profile
       .joins(:user)
       .where(users: { status: "active", phone_verified: true })
       .where.not(user_id: excluded_ids)
       .where(hidden: false)
-      .where(intent: @profile.compatible_intents)
-      .where(city: @profile.city)
+
+    prefs = @user.discovery_preferences || {}
+
+    # Gender filter
+    if prefs["preferred_gender"].present?
+      scope = scope.where(gender: prefs["preferred_gender"])
+    end
+
+    # Age range filter
+    if prefs["age_min"].present?
+      scope = scope.where("profiles.age >= ?", prefs["age_min"].to_i)
+    end
+    if prefs["age_max"].present?
+      scope = scope.where("profiles.age <= ?", prefs["age_max"].to_i)
+    end
+
+    # City filter
+    if prefs["preferred_cities"].is_a?(Array) && prefs["preferred_cities"].any?
+      scope = scope.where(city: prefs["preferred_cities"])
+    end
+
+    # Intent filter
+    if prefs["preferred_intents"].is_a?(Array) && prefs["preferred_intents"].any?
+      scope = scope.where(intent: prefs["preferred_intents"])
+    end
+
+    scope
   end
 
   def connected_user_ids

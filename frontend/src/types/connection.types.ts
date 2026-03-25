@@ -1,6 +1,6 @@
 /** The "other user" object embedded inside a connection resource. */
 export interface OtherUser {
-  id: number;
+  user_id: number;
   name: string;
   avatar_url?: string;
   city?: string;

@@ -39,10 +39,14 @@ Rails.application.routes.draw do
 
       # Connections
       resources :connections, only: [:index, :create] do
-        collection { get :requests }
+        collection do
+          get :requests
+          get :sent
+        end
         member do
           post :accept
           post :reject
+          delete :cancel
         end
       end
 
@@ -76,6 +80,9 @@ Rails.application.routes.draw do
         member  { patch :mark_read }
         collection { patch :read_all, to: "notifications#mark_all_read" }
       end
+
+      # Monetization / Subscriptions
+      post "subscriptions/upgrade", to: "subscriptions#upgrade"
 
     end
   end

@@ -42,6 +42,11 @@ api.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 402) {
+      window.dispatchEvent(new CustomEvent("paywall:triggered"));
+      return Promise.reject(error);
+    }
+
     return Promise.reject(error);
   }
 );

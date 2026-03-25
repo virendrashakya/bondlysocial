@@ -25,7 +25,7 @@ export function ChatPage() {
   const connection = (data ?? []).find((c: JsonApiResource<ConnectionAttributes>) => Number(c.id) === connectionId);
   const otherUser  = connection?.attributes?.other_user;
   const otherName  = otherUser?.name ?? "Chat";
-  const otherUserId = otherUser?.id;
+  const otherUserId = otherUser?.user_id;
 
   if (isLoading) {
     return (

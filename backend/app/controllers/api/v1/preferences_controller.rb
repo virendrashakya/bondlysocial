@@ -5,7 +5,8 @@ module Api
       def show
         render json: {
           privacy: current_user.effective_privacy,
-          notifications: current_user.effective_notification_prefs
+          notifications: current_user.effective_notification_prefs,
+          discovery: current_user.discovery_preferences
         }
       end
 
@@ -21,9 +22,15 @@ module Api
           current_user.update!(notification_preferences: merged)
         end
 
+        if params[:discovery].present?
+          merged = (current_user.discovery_preferences || {}).merge(params[:discovery].to_unsafe_h)
+          current_user.update!(discovery_preferences: merged)
+        end
+
         render json: {
           privacy: current_user.effective_privacy,
-          notifications: current_user.effective_notification_prefs
+          notifications: current_user.effective_notification_prefs,
+          discovery: current_user.discovery_preferences
         }
       end
     end

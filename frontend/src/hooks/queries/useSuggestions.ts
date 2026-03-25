@@ -31,3 +31,15 @@ export function useConnect() {
     onError: () => toast.error("Could not send request. Try again."),
   });
 }
+
+/** Mutation: pass / dislike a profile from the discover page. */
+export function usePass() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (receiverId: number) => connectionsService.pass(receiverId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
+    },
+  });
+}

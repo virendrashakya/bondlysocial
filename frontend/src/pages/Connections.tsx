@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, Check, X, UserCheck, Clock } from "lucide-react";
-import { useConnections, useConnectionRequests, useAcceptConnection, useRejectConnection } from "@/hooks/queries";
+import { MessageSquare, Check, X, UserCheck, Clock, Send } from "lucide-react";
+import { useConnections, useConnectionRequests, useAcceptConnection, useRejectConnection, useSentRequests, useCancelSent } from "@/hooks/queries";
 import { usePresenceStore } from "@/store/presenceStore";
 import type { JsonApiResource, ConnectionAttributes } from "@/types";
 import { IntentBadge } from "@/components/shared/IntentBadge";
@@ -19,11 +19,14 @@ export function ConnectionsPage() {
 
   const { data: connData, isLoading: loadingConns } = useConnections();
   const { data: reqData, isLoading: loadingReqs } = useConnectionRequests();
+  const { data: sentData, isLoading: loadingSent } = useSentRequests();
   const accept = useAcceptConnection();
   const reject = useRejectConnection();
+  const cancelSent = useCancelSent();
 
   const requests    = reqData ?? [];
   const connections = connData ?? [];
+  const sentRequests = sentData ?? [];
 
   return (
     <div className="relative max-w-2xl mx-auto px-4 py-6">
@@ -58,6 +61,16 @@ export function ConnectionsPage() {
               {requests.length > 0 && (
                 <span className="w-5 h-5 bg-brand text-white text-xs rounded-full flex items-center justify-center">
                   {requests.length}
+                </span>
+              )}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="sent">
+            <span className="flex items-center gap-1.5">
+              Sent
+              {sentRequests.length > 0 && (
+                <span className="w-5 h-5 bg-amber-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {sentRequests.length}
                 </span>
               )}
             </span>
@@ -130,6 +143,57 @@ export function ConnectionsPage() {
                       className="h-9 w-9 text-zinc-400 hover:text-red-400"
                     >
                       <X size={16} />
+                    </Button>
+                  </div>
+                </GlassCard>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* Sent tab */}
+        <TabsContent value="sent">
+          <div className="space-y-3">
+            {loadingSent && <Skeleton count={2} />}
+            {!loadingSent && sentRequests.length === 0 && (
+              <Empty
+                icon={<Send size={32} className="text-zinc-600" />}
+                text="You haven't sent any requests yet. Go discover new people!"
+                action={{ label: "Go to Discover", onClick: () => navigate("/discover") }}
+              />
+            )}
+            {sentRequests.map((r: JsonApiResource<ConnectionAttributes>) => {
+              const other = r.attributes.other_user;
+              return (
+                <GlassCard
+                  key={r.id}
+                  padding="sm"
+                  className="flex items-center gap-4"
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={other?.avatar_url} alt={other?.name} />
+                    <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-white">{other?.name}</p>
+                    <p className="text-xs text-zinc-500">
+                      {other?.city} · Sent {formatDistanceToNow(new Date(r.attributes.created_at), { addSuffix: true })}
+                    </p>
+                    {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default" className="text-amber-500 border-amber-500/20 bg-amber-500/10">
+                      <Clock size={11} />
+                      Pending
+                    </Badge>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={() => cancelSent.mutate(Number(r.id))}
+                      disabled={cancelSent.isPending}
+                      className="text-zinc-400 hover:text-red-400 text-xs"
+                    >
+                      Cancel
                     </Button>
                   </div>
                 </GlassCard>

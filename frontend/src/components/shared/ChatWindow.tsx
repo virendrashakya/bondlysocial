@@ -161,7 +161,7 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient  = useQueryClient();
   const currentUser  = useAuthStore((s) => s.user);
-  const isOtherOnline = usePresenceStore((s) => otherUser?.id ? s.isOnline(otherUser.id) : false);
+  const isOtherOnline = usePresenceStore((s) => otherUser?.user_id ? s.isOnline(otherUser.user_id) : false);
 
   const { data: messages = [], isLoading } = useMessages(connectionId);
 
@@ -274,7 +274,7 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
       {/* Desktop header */}
       <div className="hidden md:flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
         <button
-          onClick={() => otherUser?.id && navigate(`/profile/${otherUser.id}`)}
+          onClick={() => otherUser?.user_id && navigate(`/profile/${otherUser.user_id}`)}
           className="flex items-center gap-3 flex-1 min-w-0"
         >
           <div className="relative">

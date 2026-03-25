@@ -60,7 +60,16 @@ export interface NotificationPreferences {
   weekly_digest: boolean;
 }
 
+export interface DiscoveryPreferences {
+  preferred_gender?: string;
+  age_min?: number;
+  age_max?: number;
+  preferred_cities?: string[];
+  preferred_intents?: string[];
+}
+
 export interface UserPreferences {
   privacy: PrivacySettings;
   notifications: NotificationPreferences;
+  discovery: DiscoveryPreferences;
 }
