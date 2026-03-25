@@ -198,8 +198,20 @@ export function ChatWindow({ connectionId, otherUserName, otherUser, onInfoClick
     } else if (data?.type === "pin_updated") {
       queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.messages.pinned(connectionId) });
+    } else if (data?.data && data.data.type === "message") {
+      // Direct WebSocket Cache Injection for Instant Delivery!
+      const incomingMsg = data.data;
+      
+      // Skip injecting our own messages to avoid duplicating the Optimistic UI
+      if (incomingMsg.attributes.sender_id === currentUser?.id) return;
+
+      queryClient.setQueryData(queryKeys.messages.list(connectionId), (old: JsonApiResource<MessageAttributes>[] | undefined) => {
+        if (!old) return [incomingMsg];
+        if (old.some(m => m.id === incomingMsg.id)) return old;
+        return [...old, incomingMsg];
+      });
     } else {
-      // Regular message
+      // Fallback for other events
       queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
     }
   });

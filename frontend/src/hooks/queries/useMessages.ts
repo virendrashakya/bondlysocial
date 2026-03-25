@@ -37,14 +37,65 @@ export function usePinnedMessages(connectionId: number) {
   });
 }
 
+import { useAuthStore } from "@/store/authStore";
+
 /** Mutation: send a text message. */
 export function useSendMessage(connectionId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (text: string) => messagesService.sendMessage(connectionId, text),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
+    onMutate: async (text: string) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: queryKeys.messages.list(connectionId) });
+
+      // Snapshot the previous value
+      const previousMessages = queryClient.getQueryData<JsonApiResource<MessageAttributes>[]>(queryKeys.messages.list(connectionId));
+
+      // Create an optimistic message object
+      const currentUser = useAuthStore.getState().user;
+      const optimisticId = `temp-${Date.now()}`;
+      
+      const optimisticMsg: JsonApiResource<MessageAttributes> = {
+        id: optimisticId,
+        type: "message",
+        attributes: {
+          body: text,
+          sender_id: currentUser?.id ?? 0,
+          sender_name: currentUser?.profile?.name || "",
+          read: true, // Optimistically assume it's sent
+          created_at: new Date().toISOString(),
+          message_type: "text",
+          pinned: false,
+          pinned_at: null,
+          reactions: [],
+        },
+      };
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.messages.list(connectionId), (old: JsonApiResource<MessageAttributes>[] | undefined) => {
+        return old ? [...old, optimisticMsg] : [optimisticMsg];
+      });
+
+      // Return a context with the previous messages and the temp ID to rollback or update later
+      return { previousMessages, optimisticId };
+    },
+    onError: (err, newText, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(queryKeys.messages.list(connectionId), context.previousMessages);
+      }
+    },
+    onSuccess: (response, variables, context) => {
+      const realMessage = response.data.message?.data;
+      if (realMessage && context?.optimisticId) {
+        // Swap out the temporary optimistic message with the real one returned by the server
+        queryClient.setQueryData(queryKeys.messages.list(connectionId), (old: JsonApiResource<MessageAttributes>[] | undefined) => {
+          if (!old) return [realMessage];
+          return old.map((msg) => msg.id === context.optimisticId ? realMessage : msg);
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(connectionId) });
+      }
     },
   });
 }
