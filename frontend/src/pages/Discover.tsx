@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, useAnimation, PanInfo } from "framer-motion";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { Shimmer } from "@/components/ui/Shimmer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { useSuggestions, useConnect, usePass } from "@/hooks/queries";
 import { usePreferences, useUpdateDiscoveryPrefs } from "@/hooks/queries";
 import type { JsonApiResource, SuggestionProfile, DiscoveryPreferences } from "@/types";
 import { SearchX, X, Heart, ChevronDown, MapPin, Briefcase, ShieldCheck, Sparkles, SlidersHorizontal, Eye } from "lucide-react";
+import { ProfileImage } from "@/components/ui/ProfileImage";
+import { MatchCelebration } from "@/components/shared/MatchCelebration";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -38,12 +41,10 @@ export function DiscoverPage() {
   const [animating, setAnimating] = useState<"left" | "right" | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [dragX, setDragX] = useState(0);
+  const [celebration, setCelebration] = useState<{ name: string; avatarUrl?: string } | null>(null);
 
-  // Touch swipe refs
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const touchDeltaX = useRef(0);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimation();
 
   // Local filter state — initialized from server prefs
   const [filterGender, setFilterGender] = useState<string>("");
@@ -124,65 +125,53 @@ export function DiscoverPage() {
   const currentProfile = available[0];
   const remainingCount = available.length;
 
-  const handlePass = useCallback(() => {
+  const handlePass = useCallback(async () => {
     if (!currentProfile || animating) return;
     setAnimating("left");
     setExpanded(false);
-    // Persist the pass to the server so this profile never appears again
+    await controls.start({ x: -window.innerWidth, rotate: -15, opacity: 0, transition: { duration: 0.3 } });
     pass.mutate(Number(currentProfile.attributes.user_id));
-    setTimeout(() => {
-      setPassed((prev) => new Set(prev).add(currentProfile.id));
-      setAnimating(null);
-    }, 300);
-  }, [currentProfile, animating, pass]);
+    setPassed((prev) => new Set(prev).add(currentProfile.id));
+    setAnimating(null);
+    controls.set({ x: 0, rotate: 0, opacity: 1 });
+  }, [currentProfile, animating, pass, controls]);
 
-  const handleConnect = useCallback(() => {
+  const handleConnect = useCallback(async () => {
     if (!currentProfile || animating) return;
+    const profile = currentProfile.attributes;
     setAnimating("right");
     setExpanded(false);
-    connect.mutate(Number(currentProfile.attributes.user_id), {
-      onSuccess: () => toast.success(`Request sent to ${currentProfile.attributes.name}!`),
+    await controls.start({ x: window.innerWidth, rotate: 15, opacity: 0, transition: { duration: 0.3 } });
+    connect.mutate(Number(profile.user_id), {
+      onSuccess: () => {
+        setCelebration({ name: profile.name, avatarUrl: profile.avatar_url });
+      },
       onError: () => toast.error("Could not send request"),
     });
-    setTimeout(() => {
-      setConnected((prev) => new Set(prev).add(currentProfile.id));
-      setAnimating(null);
-    }, 300);
-  }, [currentProfile, animating, connect]);
+    setConnected((prev) => new Set(prev).add(currentProfile.id));
+    setAnimating(null);
+    controls.set({ x: 0, rotate: 0, opacity: 1 });
+  }, [currentProfile, animating, connect, controls]);
 
-  // Touch swipe handlers (must be after handlePass/handleConnect)
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    touchDeltaX.current = 0;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const dx = e.touches[0].clientX - touchStartX.current;
-    const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
-    if (Math.abs(dx) > dy) {
-      touchDeltaX.current = dx;
-      if (cardRef.current) {
-        const rotate = dx * 0.05;
-        cardRef.current.style.transform = `translateX(${dx}px) rotate(${rotate}deg)`;
-        cardRef.current.style.transition = 'none';
+  const handleDragEnd = useCallback(
+    (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const threshold = 100;
+      const velocity_threshold = 500;
+      // Dragged right past threshold
+      if (info.offset.x > threshold || info.velocity.x > velocity_threshold) {
+        handleConnect();
+      } 
+      // Dragged left past threshold
+      else if (info.offset.x < -threshold || info.velocity.x < -velocity_threshold) {
+        handlePass();
+      } 
+      // Snap back
+      else {
+        controls.start({ x: 0, rotate: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
       }
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    const dx = touchDeltaX.current;
-    if (cardRef.current) {
-      cardRef.current.style.transform = '';
-      cardRef.current.style.transition = '';
-    }
-    if (dx > 75) {
-      handleConnect();
-    } else if (dx < -75) {
-      handlePass();
-    }
-    touchDeltaX.current = 0;
-  }, [handleConnect, handlePass]);
+    },
+    [handleConnect, handlePass, controls]
+  );
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -237,14 +226,16 @@ export function DiscoverPage() {
   // ─── No more profiles ─────────────────────────────────────────────────
   if (!currentProfile) {
     return (
-      <div className="relative flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
+      <div className="relative flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <AuroraBg />
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center mb-4">
-          <Sparkles size={32} className="text-brand" />
-        </div>
-        <p className="text-2xl font-bold text-white">You're all caught up!</p>
+        <img
+          src="/illustrations/signup-hero.png"
+          alt=""
+          className="w-36 h-auto object-contain mb-2 opacity-80"
+        />
+        <p className="text-2xl font-bold text-gradient">You're all caught up!</p>
         <p className="mt-2 text-sm text-zinc-500 max-w-xs">
-          No more profiles for now. Try adjusting your filters or check back later.
+          No more profiles right now. Adjust your filters or check back later for new people.
         </p>
         <div className="flex gap-3 mt-6">
           <Button
@@ -259,6 +250,7 @@ export function DiscoverPage() {
           <Button
             variant="pink"
             onClick={() => setShowFilters(true)}
+            className="animate-glow-pulse"
           >
             <SlidersHorizontal size={15} />
             Adjust Filters
@@ -272,12 +264,12 @@ export function DiscoverPage() {
   const score = p.match_score;
 
   return (
-    <div className="relative flex flex-col items-center px-4 py-3 md:h-full md:overflow-hidden">
+    <div className="relative flex flex-col items-center px-2 sm:px-4 py-1 sm:py-3 md:h-full md:overflow-hidden">
       <AuroraBg />
 
       {/* Counter + Filter toggle */}
-      <div className="w-full max-w-md flex items-center justify-between mb-2">
-        <h1 className="text-lg font-bold text-white">Discover</h1>
+      <div className="w-full max-w-md flex items-center justify-between mb-1">
+        <h1 className="text-lg font-bold text-gradient">Discover</h1>
         <div className="flex items-center gap-2">
           <span className="text-xs text-zinc-500">{remainingCount} left today</span>
           <button
@@ -414,35 +406,57 @@ export function DiscoverPage() {
         </div>
       )}
 
-      {/* Card */}
-      <div
-        ref={cardRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+      {/* Card — 9:16 aspect ratio fills viewport on mobile */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.9}
+        onDrag={(_, info) => setDragX(info.offset.x)}
+        onDragEnd={(e, info) => { setDragX(0); handleDragEnd(e, info); }}
+        animate={controls}
+        whileDrag={{ cursor: "grabbing" }}
+        style={{ touchAction: "none" }}
         className={cn(
-          "relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl shadow-black/40",
-          "md:max-h-[calc(100vh-220px)]",
-          "transition-all duration-300",
-          animating === "left" && "translate-x-[-120%] rotate-[-8deg] opacity-0",
-          animating === "right" && "translate-x-[120%] rotate-[8deg] opacity-0",
-          !animating && "translate-x-0 rotate-0 opacity-100"
+          "relative w-full max-w-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/40 cursor-grab active:cursor-grabbing",
+          "max-h-[calc(100dvh-130px)] sm:max-h-[calc(100dvh-150px)] md:max-h-[calc(100vh-180px)]",
+          !animating && "transition-none",
+          animating === "left" && "pointer-events-none",
+          animating === "right" && "pointer-events-none"
         )}
       >
-        {/* Full-height photo */}
-        <div className={cn("relative w-full h-[75vh] md:h-[calc(100vh-240px)]", expanded && "h-[50vh] md:h-[calc(100vh-380px)]")}>
-          {p.avatar_url ? (
-            <img
-              src={p.avatar_url}
-              alt={p.name}
-              className="w-full h-full object-cover"
-              draggable={false}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-muted to-dark-hover">
-              <span className="text-8xl font-black text-brand/20">{p.name?.[0]?.toUpperCase()}</span>
+        {/* ── Swipe direction overlay labels ── */}
+        {dragX > 30 && (
+          <div
+            className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"
+            style={{ opacity: Math.min(Math.abs(dragX) / 150, 1) }}
+          >
+            <div className="absolute top-8 left-6 rotate-[-20deg] border-4 border-emerald-400 rounded-xl px-5 py-2">
+              <span className="text-3xl font-black text-emerald-400 tracking-wider">LIKE</span>
             </div>
-          )}
+          </div>
+        )}
+        {dragX < -30 && (
+          <div
+            className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"
+            style={{ opacity: Math.min(Math.abs(dragX) / 150, 1) }}
+          >
+            <div className="absolute top-8 right-6 rotate-[20deg] border-4 border-red-400 rounded-xl px-5 py-2">
+              <span className="text-3xl font-black text-red-400 tracking-wider">NOPE</span>
+            </div>
+          </div>
+        )}
+        {/* Photo — 9:16 aspect on mobile, constrained by card max-h */}
+        <div className={cn(
+          "relative w-full",
+          expanded
+            ? "aspect-[9/12] sm:aspect-[9/13] md:h-[calc(100vh-360px)]"
+            : "aspect-[9/16] md:h-[calc(100vh-200px)]"
+        )}>
+          <ProfileImage
+            src={p.avatar_url}
+            name={p.name}
+            className="w-full h-full"
+          />
 
           {/* Gradient overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
@@ -463,8 +477,8 @@ export function DiscoverPage() {
             )}
           </div>
 
-          {/* Bottom info overlay */}
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+          {/* Bottom info overlay — positioned above the action buttons */}
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-20">
             <div className="flex items-end justify-between">
               <div>
                 <h2 className="text-3xl font-bold text-white drop-shadow-lg">
@@ -488,26 +502,17 @@ export function DiscoverPage() {
               <IntentBadge intent={p.intent} />
             </div>
 
-            {/* Expand + View Profile */}
-            <div className="mt-3 flex items-center gap-3">
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors"
-              >
-                <ChevronDown
-                  size={14}
-                  className={cn("transition-transform", expanded && "rotate-180")}
-                />
-                {expanded ? "Show less" : `More about ${p.name?.split(" ")[0]}`}
-              </button>
-              <button
-                onClick={() => navigate(`/profile/${p.user_id}`)}
-                className="flex items-center gap-1 text-xs text-brand/80 hover:text-brand transition-colors ml-auto"
-              >
-                <Eye size={13} />
-                View Profile
-              </button>
-            </div>
+            {/* Expand toggle */}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="mt-2 flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors"
+            >
+              <ChevronDown
+                size={14}
+                className={cn("transition-transform", expanded && "rotate-180")}
+              />
+              {expanded ? "Show less" : `More about ${p.name?.split(" ")[0]}`}
+            </button>
           </div>
         </div>
 
@@ -577,47 +582,71 @@ export function DiscoverPage() {
             </Button>
           </div>
         )}
-      </div>
+        {/* ── Action buttons — overlaid at bottom of card ── */}
+        {!expanded && (
+          <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center gap-5 pb-4 pt-16 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+            {/* Pass */}
+            <button
+              onClick={handlePass}
+              disabled={!!animating}
+              className={cn(
+                "pointer-events-auto w-13 h-13 sm:w-14 sm:h-14 rounded-full border-2 border-white/30 bg-black/40 backdrop-blur-sm flex items-center justify-center",
+                "text-white/80 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10",
+                "transition-all active:scale-90",
+                animating && "opacity-50 pointer-events-none"
+              )}
+              style={{ width: 52, height: 52 }}
+              aria-label="Pass"
+            >
+              <X size={22} strokeWidth={2.5} />
+            </button>
 
-      {/* Action buttons — always visible */}
-      <div className="flex items-center justify-center gap-6 mt-4">
-        {/* Pass */}
-        <button
-          onClick={handlePass}
-          disabled={!!animating}
-          className={cn(
-            "w-14 h-14 rounded-full border-2 border-zinc-700 flex items-center justify-center",
-            "text-zinc-400 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10",
-            "transition-all active:scale-90",
-            animating && "opacity-50 pointer-events-none"
-          )}
-          aria-label="Pass"
-        >
-          <X size={24} strokeWidth={2.5} />
-        </button>
+            {/* Connect */}
+            <button
+              onClick={handleConnect}
+              disabled={!!animating}
+              className={cn(
+                "pointer-events-auto w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center",
+                "text-white shadow-lg shadow-brand/30 animate-glow-pulse",
+                "hover:shadow-brand/50 hover:scale-105",
+                "transition-all active:scale-90",
+                animating && "opacity-50 pointer-events-none"
+              )}
+              style={{ width: 58, height: 58 }}
+              aria-label="Connect"
+            >
+              <Heart size={24} strokeWidth={2.5} fill="currentColor" />
+            </button>
 
-        {/* Connect */}
-        <button
-          onClick={handleConnect}
-          disabled={!!animating}
-          className={cn(
-            "w-16 h-16 rounded-full bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center",
-            "text-white shadow-lg shadow-brand/30",
-            "hover:shadow-brand/50 hover:scale-105",
-            "transition-all active:scale-90",
-            animating && "opacity-50 pointer-events-none"
-          )}
-          aria-label="Connect"
-        >
-          <Heart size={26} strokeWidth={2.5} fill="currentColor" />
-        </button>
-      </div>
+            {/* View Profile */}
+            <button
+              onClick={() => navigate(`/profile/${p.user_id}`)}
+              className={cn(
+                "pointer-events-auto rounded-full border-2 border-white/30 bg-black/40 backdrop-blur-sm flex items-center justify-center",
+                "text-white/80 hover:text-brand hover:border-brand/50",
+                "transition-all active:scale-90"
+              )}
+              style={{ width: 52, height: 52 }}
+              aria-label="View profile"
+            >
+              <Eye size={20} />
+            </button>
+          </div>
+        )}
+      </motion.div>
 
-      {/* Swipe hint on mobile, keyboard hint on desktop */}
-      <p className="text-[10px] text-zinc-700 mt-3 md:hidden">swipe left to pass · swipe right to like</p>
-      <p className="text-[10px] text-zinc-700 mt-3 hidden md:block">
-        ← pass · → connect
-      </p>
+      {/* Swipe hint — below card, minimal space */}
+      <p className="text-[10px] text-zinc-700 mt-1 md:hidden">swipe left to pass · swipe right to like</p>
+      <p className="text-[10px] text-zinc-700 mt-1 hidden md:block">← pass · → connect</p>
+
+      {/* Match celebration overlay */}
+      {celebration && (
+        <MatchCelebration
+          name={celebration.name}
+          avatarUrl={celebration.avatarUrl}
+          onDismiss={() => setCelebration(null)}
+        />
+      )}
     </div>
   );
 }

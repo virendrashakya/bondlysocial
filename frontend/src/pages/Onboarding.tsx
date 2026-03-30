@@ -109,22 +109,37 @@ export function OnboardingPage() {
   const progress = ((step - 1) / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-dark-bg flex items-start sm:items-center justify-center px-3 sm:px-4 py-4 sm:py-8 relative overflow-y-auto">
       <AuroraBg />
 
       <div className="w-full max-w-lg animate-page-enter">
         {/* Header */}
-        <div className="text-center mb-6">
-          <span className="text-brand font-black text-lg tracking-tight">IntentConnect</span>
-          <p className="text-xs text-zinc-500 mt-0.5">Let's set up your profile</p>
+        <div className="text-center mb-3 sm:mb-6">
+          {/* Show contextual illustration for intent/photo steps */}
+          {step === 2 && (
+            <img
+              src="/illustrations/onboarding-intent.png"
+              alt=""
+              className="w-24 sm:w-28 h-auto mx-auto mb-3 object-contain"
+            />
+          )}
+          {step === 4 && (
+            <img
+              src="/illustrations/onboarding-profile.png"
+              alt=""
+              className="w-24 sm:w-28 h-auto mx-auto mb-3 object-contain"
+            />
+          )}
+          <span className="text-brand font-black text-base sm:text-lg tracking-tight">IntentConnect</span>
+          <p className="text-[10px] sm:text-xs text-zinc-500 mt-0.5">Let's set up your profile</p>
         </div>
 
         {/* Step indicators */}
-        <div className="flex items-center gap-1.5 mb-2">
+        <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-2">
           {STEPS.map((s, i) => (
             <div key={s.id} className="flex items-center flex-1">
               <div className={cn(
-                "flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all flex-shrink-0",
+                "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[10px] sm:text-xs font-bold transition-all flex-shrink-0",
                 step > s.id
                   ? "bg-brand text-white"
                   : step === s.id
@@ -139,7 +154,7 @@ export function OnboardingPage() {
             </div>
           ))}
         </div>
-        <div className="flex justify-between mb-5 px-0.5">
+        <div className="flex justify-between mb-3 sm:mb-5 px-0.5">
           {STEPS.map((s) => (
             <span key={s.id} className={cn("text-[10px] font-medium flex-1 text-center transition-colors", step >= s.id ? "text-zinc-300" : "text-zinc-700")}>
               {s.label}
@@ -148,7 +163,7 @@ export function OnboardingPage() {
         </div>
 
         {/* Progress bar */}
-        <div className="h-0.5 bg-dark-border rounded-full mb-6 overflow-hidden">
+        <div className="h-0.5 bg-dark-border rounded-full mb-3 sm:mb-6 overflow-hidden">
           <div className="h-full bg-brand rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
         </div>
 
@@ -345,7 +360,7 @@ export function OnboardingPage() {
                 {/* Photo upload area */}
                 <div className="flex flex-col items-center gap-4">
                   <div
-                    className="relative w-36 h-36 rounded-3xl overflow-hidden bg-dark-hover border-2 border-dashed border-dark-border cursor-pointer hover:border-brand transition-colors group"
+                    className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden bg-dark-hover border-2 border-dashed border-dark-border cursor-pointer hover:border-brand transition-colors group"
                     onClick={() => fileRef.current?.click()}
                     role="button"
                     tabIndex={0}

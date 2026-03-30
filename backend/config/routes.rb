@@ -9,11 +9,13 @@ Rails.application.routes.draw do
 
       # Auth (public)
       scope :auth do
-        post "signup",      to: "auth#signup"
-        post "login",       to: "auth#login"
-        post "verify_otp",  to: "auth#verify_otp"
-        post "refresh",     to: "auth#refresh"
-        delete "logout",    to: "auth#logout"
+        post "signup",           to: "auth#signup"
+        post "login",            to: "auth#login"
+        post "verify_otp",       to: "auth#verify_otp"
+        post "refresh",          to: "auth#refresh"
+        post "forgot_password",  to: "auth#forgot_password"
+        post "reset_password",   to: "auth#reset_password"
+        delete "logout",         to: "auth#logout"
       end
 
       # Profile discovery

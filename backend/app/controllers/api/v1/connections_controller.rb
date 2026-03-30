@@ -56,7 +56,7 @@ module Api
                 metadata: { connection_id: connection.id, requester_id: current_user.id }
               )
             end
-            render json: { connection: ConnectionSerializer.new(connection).serializable_hash }, status: :ok
+            render json: { connection: ConnectionSerializer.new(connection, { params: { current_user: current_user } }).serializable_hash }, status: :ok
           else
             render json: { errors: connection.errors.full_messages }, status: :unprocessable_entity
           end
@@ -71,7 +71,7 @@ module Api
                 metadata: { connection_id: connection.id, requester_id: current_user.id }
               )
             end
-            render json: { connection: ConnectionSerializer.new(connection).serializable_hash }, status: :created
+            render json: { connection: ConnectionSerializer.new(connection, { params: { current_user: current_user } }).serializable_hash }, status: :created
           else
             render json: { errors: connection.errors.full_messages }, status: :unprocessable_entity
           end

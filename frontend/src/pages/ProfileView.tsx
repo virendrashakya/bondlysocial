@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck, MapPin, Briefcase, Flag, Ban, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, MessageSquare, Images } from "lucide-react";
+import { ProfileImage } from "@/components/ui/ProfileImage";
 import { useState } from "react";
 import { profilesService } from "@/services/profiles.service";
 import { connectionsService } from "@/services/connections.service";
@@ -67,19 +68,16 @@ export function ProfileViewPage() {
   const p = data.attributes;
 
   return (
-    <div className="max-w-lg mx-auto md:px-4 md:py-6">
+    <div className="max-w-lg mx-auto md:px-4 md:py-6 pb-4">
       <GlassCard padding="none" className="overflow-hidden md:rounded-2xl rounded-none">
         {/* Avatar — full width, natural height */}
         <div className="relative">
-          {p.avatar_url ? (
-            <img src={p.avatar_url} alt={p.name} className="w-full object-cover max-h-[80vh]" />
-          ) : (
-            <div className="h-64 bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center">
-              <Avatar className="w-24 h-24 text-4xl">
-                <AvatarFallback>{p.name?.[0]}</AvatarFallback>
-              </Avatar>
-            </div>
-          )}
+          <ProfileImage
+            src={p.avatar_url}
+            name={p.name}
+            className="w-full max-h-[80vh]"
+            fallbackClassName="h-64"
+          />
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
           {/* Floating back button */}

@@ -79,14 +79,14 @@ export function MessagesPage() {
   const connections: JsonApiResource<ConnectionAttributes>[] = data ?? [];
 
   return (
-    <div className="relative max-w-2xl mx-auto px-4 py-6">
+    <div className="relative max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <AuroraBg />
 
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-0.5">
           <i className="fa-solid fa-comments text-brand text-base" aria-hidden="true" />
-          <h1 className="text-xl font-bold text-white">Messages</h1>
+          <h1 className="text-xl font-bold text-gradient">Messages</h1>
         </div>
         <p className="text-sm text-zinc-500">
           {connections.length > 0
@@ -112,19 +112,22 @@ export function MessagesPage() {
 
       {/* Empty state */}
       {!isLoading && connections.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-          <div className="w-16 h-16 rounded-2xl bg-brand-muted border border-brand-border flex items-center justify-center mb-1">
-            <i className="fa-regular fa-comments text-2xl text-brand" aria-hidden="true" />
-          </div>
-          <p className="text-sm font-medium text-white">No conversations yet</p>
-          <p className="text-xs text-zinc-600 max-w-xs">
-            Connect with people on Discover to start chatting.
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+          <img
+            src="/illustrations/login-hero.png"
+            alt=""
+            className="w-32 h-auto object-contain mb-2 opacity-80"
+          />
+          <p className="text-lg font-bold text-gradient">No conversations yet</p>
+          <p className="text-xs text-zinc-500 max-w-xs">
+            Connect with people on Discover to start chatting. Your conversations will appear here.
           </p>
           <Button
             variant="pink"
             onClick={() => navigate("/discover")}
-            className="mt-2"
+            className="mt-3 animate-glow-pulse"
           >
+            <i className="fa-solid fa-compass text-sm" aria-hidden="true" />
             Discover people
           </Button>
         </div>

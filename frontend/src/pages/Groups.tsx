@@ -101,7 +101,7 @@ export function GroupsPage() {
   const groups = (data ?? []).filter((g: JsonApiResource<GroupAttributes>) => !category || g.attributes.category === category);
 
   return (
-    <div className="relative max-w-3xl mx-auto px-4 py-6">
+    <div className="relative max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <AuroraBg />
 
       {/* Header */}

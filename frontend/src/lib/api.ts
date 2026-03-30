@@ -19,7 +19,10 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const original = error.config as any;
 
-    if (error.response?.status === 401 && !original._retry) {
+    // Don't retry auth endpoints — they legitimately return 401
+    const isAuthEndpoint = original?.url?.includes("/auth/");
+
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       const refreshToken = useAuthStore.getState().refreshToken;
 

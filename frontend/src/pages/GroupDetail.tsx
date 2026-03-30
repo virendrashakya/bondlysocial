@@ -75,7 +75,7 @@ export function GroupDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4">
         <div className="h-8 w-48 bg-white/[0.06] rounded animate-pulse" />
         <GlassCard padding="default" className="space-y-3 animate-pulse">
           <div className="h-5 w-3/4 bg-white/[0.06] rounded" />
@@ -99,7 +99,7 @@ export function GroupDetailPage() {
   const badgeVar = group.category ? CATEGORY_BADGE_VARIANT[group.category] ?? "default" : "default";
 
   return (
-    <div className="relative max-w-2xl mx-auto px-4 py-6">
+    <div className="relative max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <AuroraBg />
 
       {/* Header */}

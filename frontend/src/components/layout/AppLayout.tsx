@@ -1,6 +1,6 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, LogOut, ShieldCheck, Menu, X } from "lucide-react";
+import { LogOut, ShieldCheck, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
@@ -168,7 +168,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const isImmersive = Boolean(location.pathname.match(/^\/(chat|profile)\/\d+$/));
 
   return (
-    <div className="flex flex-col h-screen bg-dark-bg overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-dark-bg overflow-hidden">
       {/* Global announcement banner */}
       <AnnouncementBanner text={appConfig.announcement_banner} />
       
@@ -193,24 +193,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Main content */}
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Mobile topbar */}
-          {!isImmersive && (
-            <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
-              <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="h-9 w-9 text-zinc-400 hover:text-white">
-                <Menu size={20} />
-              </Button>
-              <span className="font-bold text-brand text-base tracking-tight">IntentConnect</span>
-              <NavLink to="/notifications" className="relative text-zinc-400 hover:text-white transition-colors">
-                <Bell size={20} />
-                {unread > 0 && (
-                  <Badge variant="brand" size="sm" className="absolute -top-1 -right-1 min-w-[1rem] h-4 px-1 flex items-center justify-center text-[9px] font-bold">
-                    {unread > 9 ? "9+" : unread}
-                  </Badge>
-                )}
-              </NavLink>
-            </div>
-          )}
-
           <main
             id="main-content"
             key={location.pathname}
@@ -218,7 +200,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               "flex-1 min-h-0 animate-page-enter",
               location.pathname.startsWith("/chat/")
                 ? "overflow-hidden"
-                : "overflow-y-auto overscroll-none pb-20 md:pb-0"
+                : "overflow-y-auto overscroll-none pb-16 md:pb-0"
             )}
           >
             {children}

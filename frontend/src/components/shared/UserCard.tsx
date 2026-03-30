@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+import { ProfileImage } from "@/components/ui/ProfileImage";
 import { IntentBadge } from "./IntentBadge";
 import type { SuggestionProfile } from "@/types";
 import { formatDistanceToNow } from "date-fns";
@@ -50,25 +51,17 @@ export function UserCard({ profile, onConnect, onView, loading }: UserCardProps)
     <GlassCard
       variant="interactive"
       padding="none"
-      className="overflow-hidden group animate-page-enter"
+      className="overflow-hidden group animate-page-enter hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-0.5 transition-all duration-300"
       role="article"
       aria-label={`${profile.name}, ${profile.age}. ${tier?.label ?? ""}`}
     >
       {/* Avatar */}
       <div className="relative overflow-hidden">
-        {profile.avatar_url ? (
-          <img
-            src={profile.avatar_url}
-            alt={`Profile photo of ${profile.name}`}
-            className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-52 flex items-center justify-center bg-gradient-to-br from-brand-muted to-dark-hover" aria-hidden="true">
-            <span className="text-6xl font-black text-brand/20">{profile.name?.[0]?.toUpperCase()}</span>
-          </div>
-        )}
+        <ProfileImage
+          src={profile.avatar_url}
+          name={profile.name}
+          className="w-full h-52 group-hover:scale-105 transition-transform duration-500"
+        />
 
         {/* Gradient overlay */}
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/90 to-transparent" aria-hidden="true" />

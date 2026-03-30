@@ -21,7 +21,7 @@ export function UserPostsPage() {
   const name = data?.attributes?.name ?? "User";
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="max-w-lg mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <Button

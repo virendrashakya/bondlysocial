@@ -29,7 +29,7 @@ export function ConnectionsPage() {
   const sentRequests = sentData ?? [];
 
   return (
-    <div className="relative max-w-2xl mx-auto px-4 py-6">
+    <div className="relative max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <AuroraBg />
 
       {/* Header */}
@@ -37,7 +37,7 @@ export function ConnectionsPage() {
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <i className="fa-solid fa-user-group text-brand text-base" aria-hidden="true" />
-            <h1 className="text-xl font-bold text-white">Your Connections</h1>
+            <h1 className="text-xl font-bold text-gradient">Your Connections</h1>
           </div>
           <p className="text-sm text-zinc-500">
             People you've connected with · {connections.length} connected
@@ -84,6 +84,7 @@ export function ConnectionsPage() {
             {!loadingConns && connections.length === 0 && (
               <Empty
                 icon={<UserCheck size={32} className="text-zinc-600" />}
+                illustration="/illustrations/signup-hero.png"
                 text="No connections yet. Discover people and send a request."
                 action={{ label: "Go to Discover", onClick: () => navigate("/discover") }}
               />
@@ -110,29 +111,29 @@ export function ConnectionsPage() {
                 <GlassCard
                   key={r.id}
                   padding="sm"
-                  className="flex items-center gap-4"
+                  className="flex items-center gap-3"
                 >
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                     <AvatarImage src={other?.avatar_url} alt={other?.name} />
                     <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white">{other?.name}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="font-medium text-white text-sm truncate">{other?.name}</p>
+                    <p className="text-[11px] text-zinc-500 truncate">
                       {other?.city} · {formatDistanceToNow(new Date(r.attributes.created_at), { addSuffix: true })}
                     </p>
                     {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5 flex-shrink-0">
                     <Button
                       variant="glass"
                       size="icon"
                       onClick={() => accept.mutate(Number(r.id))}
                       disabled={accept.isPending}
                       title="Accept"
-                      className="h-9 w-9 text-emerald-400 hover:text-emerald-300"
+                      className="h-8 w-8 sm:h-9 sm:w-9 text-emerald-400 hover:text-emerald-300"
                     >
-                      <Check size={16} />
+                      <Check size={15} />
                     </Button>
                     <Button
                       variant="glass"
@@ -140,9 +141,9 @@ export function ConnectionsPage() {
                       onClick={() => reject.mutate(Number(r.id))}
                       disabled={reject.isPending}
                       title="Reject"
-                      className="h-9 w-9 text-zinc-400 hover:text-red-400"
+                      className="h-8 w-8 sm:h-9 sm:w-9 text-zinc-400 hover:text-red-400"
                     >
-                      <X size={16} />
+                      <X size={15} />
                     </Button>
                   </div>
                 </GlassCard>
@@ -168,22 +169,22 @@ export function ConnectionsPage() {
                 <GlassCard
                   key={r.id}
                   padding="sm"
-                  className="flex items-center gap-4"
+                  className="flex items-center gap-3"
                 >
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                     <AvatarImage src={other?.avatar_url} alt={other?.name} />
                     <AvatarFallback>{other?.name?.[0] ?? "?"}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white">{other?.name}</p>
-                    <p className="text-xs text-zinc-500">
-                      {other?.city} · Sent {formatDistanceToNow(new Date(r.attributes.created_at), { addSuffix: true })}
+                    <p className="font-medium text-white text-sm truncate">{other?.name}</p>
+                    <p className="text-[11px] text-zinc-500 truncate">
+                      {other?.city} · {formatDistanceToNow(new Date(r.attributes.created_at), { addSuffix: true })}
                     </p>
                     {other?.intent && <IntentBadge intent={other.intent} size="sm" />}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="text-amber-500 border-amber-500/20 bg-amber-500/10">
-                      <Clock size={11} />
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <Badge variant="default" className="text-amber-500 border-amber-500/20 bg-amber-500/10 text-[10px]">
+                      <Clock size={10} />
                       Pending
                     </Badge>
                     <Button
@@ -191,7 +192,7 @@ export function ConnectionsPage() {
                       size="sm"
                       onClick={() => cancelSent.mutate(Number(r.id))}
                       disabled={cancelSent.isPending}
-                      className="text-zinc-400 hover:text-red-400 text-xs"
+                      className="text-zinc-400 hover:text-red-400 text-[11px] h-7 px-2"
                     >
                       Cancel
                     </Button>
@@ -262,13 +263,17 @@ function Skeleton({ count }: { count: number }) {
   );
 }
 
-function Empty({ icon, text, action }: { icon: React.ReactNode; text: string; action?: { label: string; onClick: () => void } }) {
+function Empty({ icon, text, action, illustration }: { icon: React.ReactNode; text: string; action?: { label: string; onClick: () => void }; illustration?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-      {icon}
-      <p className="text-sm text-zinc-500 max-w-xs">{text}</p>
+    <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+      {illustration ? (
+        <img src={illustration} alt="" className="w-28 h-auto object-contain mb-1 opacity-80" />
+      ) : (
+        icon
+      )}
+      <p className="text-sm text-zinc-400 max-w-xs">{text}</p>
       {action && (
-        <Button variant="pink" onClick={action.onClick} className="mt-1">
+        <Button variant="pink" onClick={action.onClick} className="mt-2 animate-glow-pulse">
           {action.label}
         </Button>
       )}

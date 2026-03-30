@@ -95,12 +95,12 @@ export function NearbyPage() {
   const profiles = data ?? [];
 
   return (
-    <div className="relative max-w-5xl mx-auto px-4 py-6">
+    <div className="relative max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <AuroraBg />
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-xl font-bold text-gradient flex items-center gap-2">
           <i className="fa-solid fa-location-crosshairs text-brand" aria-hidden="true" />
           Nearby People
         </h1>
@@ -110,7 +110,7 @@ export function NearbyPage() {
       {/* Location controls */}
       <GlassCard padding="sm" className="mb-6 space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[180px]">
+          <div className="relative flex-1 min-w-0">
             <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 z-10" aria-hidden="true" />
             <Input
               value={city}

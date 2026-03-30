@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import { Camera, ShieldCheck, AlertCircle, Lock, Eye, EyeOff, Bell, Trash2, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, Users } from "lucide-react";
+import { Camera, ShieldCheck, AlertCircle, Lock, Eye, EyeOff, Bell, Trash2, Ruler, Dumbbell, Wine, Cigarette, Heart, Globe2, BookOpen, Users, LogOut } from "lucide-react";
 import type { Profile } from "@/types";
 import {
   INTENTS, INTERESTS, CULTURAL_BACKGROUNDS, RELIGIONS, BODY_TYPES,
@@ -9,6 +10,8 @@ import {
 } from "@/constants";
 import { useMyProfile, useUpdateProfile, useUploadAvatar, useUploadSelfie, usePreferences, useUpdatePrivacy, useUpdateNotificationPrefs } from "@/hooks/queries";
 import { useAuthStore } from "@/store/authStore";
+import { authService } from "@/services/auth.service";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { IntentBadge } from "@/components/shared/IntentBadge";
 import { AuroraBg } from "@/components/ui/AuroraBg";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -28,6 +31,8 @@ import toast from "react-hot-toast";
 export function SettingsPage() {
   const [tab, setTab] = useState("profile");
   const user          = useAuthStore((s) => s.user);
+  const logout        = useAuthStore((s) => s.logout);
+  const navigate      = useNavigate();
 
   const { data: profileData } = useMyProfile();
   const update       = useUpdateProfile();
@@ -63,11 +68,75 @@ export function SettingsPage() {
   const setP = (key: string, val: boolean | string) => updatePrivacy.mutate({ [key]: val });
   const setN = (key: string, val: boolean) => updateNotifPrefs.mutate({ [key]: val });
 
+  const handleLogout = async () => {
+    try { await authService.logout(); } catch { /* ignore */ }
+    logout();
+    navigate("/login");
+  };
+
   return (
-    <div className="relative max-w-2xl mx-auto px-4 py-6">
+    <div className="relative max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <AuroraBg />
 
-      <h1 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
+      {/* ── Profile header card (mobile) ── */}
+      <GlassCard padding="sm" className="mb-4 md:hidden">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-shrink-0">
+            <Avatar className="h-12 w-12">
+              {profileData?.avatar_url && (
+                <AvatarImage src={profileData.avatar_url} alt={profileData?.name ?? "Profile"} />
+              )}
+              <AvatarFallback className="text-sm font-bold">
+                {profileData?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "?"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-dark-surface" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {profileData?.name ?? user?.email ?? "Complete profile"}
+            </p>
+            <p className="text-[11px] text-zinc-500 truncate">
+              {profileData?.intent ? profileData.intent.replace(/_/g, " ") : user?.email}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/notifications")}
+            className="relative h-9 w-9 flex items-center justify-center text-zinc-400 hover:text-white rounded-xl bg-white/[0.04] border border-white/[0.06] transition-colors"
+            aria-label="Notifications"
+          >
+            <Bell size={16} />
+          </button>
+        </div>
+
+        {/* Quick action row */}
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => navigate("/nearby")}
+            className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-medium text-zinc-400 hover:text-white py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] transition-colors"
+          >
+            <i className="fa-solid fa-location-crosshairs text-[10px] text-brand" aria-hidden="true" />
+            Nearby
+          </button>
+          <button
+            onClick={() => navigate("/groups")}
+            className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-medium text-zinc-400 hover:text-white py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] transition-colors"
+          >
+            <i className="fa-solid fa-people-group text-[10px] text-brand" aria-hidden="true" />
+            Groups
+          </button>
+          <button
+            onClick={() => navigate("/blocked-users")}
+            className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-medium text-zinc-400 hover:text-white py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] transition-colors"
+          >
+            <i className="fa-solid fa-ban text-[10px] text-zinc-500" aria-hidden="true" />
+            Blocked
+          </button>
+        </div>
+      </GlassCard>
+
+      {/* Page heading — mobile shows compact, desktop shows full */}
+      <h1 className="text-lg font-bold text-gradient mb-4 flex items-center gap-2 md:text-xl md:mb-5">
         <i className="fa-solid fa-sliders text-brand" aria-hidden="true" />
         Settings
       </h1>
@@ -863,6 +932,18 @@ export function SettingsPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Sign out — mobile */}
+      <div className="mt-6 md:hidden">
+        <Button
+          variant="glass"
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400"
+        >
+          <LogOut size={16} />
+          Sign out
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,15 +1,16 @@
 class OtpDeliveryJob < ApplicationJob
   queue_as :critical
 
-  def perform(user_id:, otp:, channel: :sms)
-    user = User.find_by(id: user_id)
-    return unless user
+  def perform(user_id: nil, phone: nil, email: nil, otp:, channel: :sms)
+    user = User.find_by(id: user_id) if user_id
 
     case channel.to_sym
     when :sms
-      SmsService.send_otp(phone: user.phone, otp: otp)
+      target_phone = phone || user&.phone
+      SmsService.send_otp(phone: target_phone, otp: otp) if target_phone
     when :email
-      UserMailer.otp_email(user, otp).deliver_now
+      target_user = user || User.new(email: email)
+      UserMailer.otp_email(target_user, otp).deliver_now if target_user.email
     end
   end
 end

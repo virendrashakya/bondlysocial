@@ -11,6 +11,7 @@ import { AppLayout }     from "./components/layout/AppLayout";
 // Public pages
 import { LoginPage }     from "./pages/Login";
 import { SignupPage }    from "./pages/Signup";
+import { ForgotPasswordPage } from "./pages/ForgotPassword";
 
 // Onboarding
 import { OnboardingPage } from "./pages/Onboarding";
@@ -78,6 +79,7 @@ function AppRoutes() {
         {/* ── Public ── */}
         <Route path="/login"  element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* ── Onboarding ── */}
         <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
